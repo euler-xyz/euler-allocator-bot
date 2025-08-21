@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+coverage
+.next
+.vercel
+.env
+.env.*
+pnpm-lock.yaml 

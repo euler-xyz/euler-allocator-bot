@@ -1,0 +1,503 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ponder_meta {
+  key   String @id
+  value Json?
+
+  @@map("_ponder_meta")
+}
+
+model reorg__borrow {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(dbgenerated("nextval('_reorg__borrow_operation_id_seq'::regclass)"))
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__borrow")
+}
+
+model reorg__deposit {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  sender       String
+  owner        String
+  amount       Decimal @db.Decimal(78, 0)
+  share        Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(dbgenerated("nextval('_reorg__deposit_operation_id_seq'::regclass)"))
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__deposit")
+}
+
+model reorg__interestAccrued {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(autoincrement())
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__interestAccrued")
+}
+
+model reorg__liquidate {
+  id                String
+  chain_id          Int
+  tx_hash           String
+  block_number      Decimal @db.Decimal(78, 0)
+  timestamp         Decimal @db.Decimal(78, 0)
+  log_index         Int
+  vault             String
+  liquidator        String
+  violator          String
+  repay_amount      Decimal @db.Decimal(78, 0)
+  collateral_shares Decimal @db.Decimal(78, 0)
+  collateral_asset  String
+  operation_id      Int     @id @default(dbgenerated("nextval('_reorg__liquidate_operation_id_seq'::regclass)"))
+  operation         Int
+  checkpoint        String  @db.VarChar(75)
+
+  @@map("_reorg__liquidate")
+}
+
+model reorg__pullDebt {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  from         String
+  to           String
+  amount       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(autoincrement())
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__pullDebt")
+}
+
+model reorg__repay {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(dbgenerated("nextval('_reorg__repay_operation_id_seq'::regclass)"))
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__repay")
+}
+
+model reorg__transfers {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  from         String
+  to           String
+  amount       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(dbgenerated("nextval('_reorg__transfers_operation_id_seq'::regclass)"))
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__transfers")
+}
+
+model reorg__vaultCollateralDetails {
+  id                        String
+  chain_id                  Int
+  vault                     String
+  collateral_asset          String
+  collateral_asset_decimals Int
+  borrow_ltv                Int
+  liquidation_ltv           Int
+  initial_liquidation_ltv   Int
+  target_timestamp          Int
+  ramp_duration             Int
+  operation_id              Int    @id @default(autoincrement())
+  operation                 Int
+  checkpoint                String @db.VarChar(75)
+
+  @@map("_reorg__vaultCollateralDetails")
+}
+
+model reorg__vaultDetails {
+  id               String
+  chain_id         Int
+  tx_hash          String
+  block_number     Decimal @db.Decimal(78, 0)
+  timestamp        Decimal @db.Decimal(78, 0)
+  log_index        Int
+  vault            String
+  creator          String
+  asset            String
+  asset_decimals   Int
+  d_token          String
+  d_token_decimals Int
+  operation_id     Int     @id @default(autoincrement())
+  operation        Int
+  checkpoint       String  @db.VarChar(75)
+
+  @@map("_reorg__vaultDetails")
+}
+
+model reorg__vaultStatus {
+  id                   String
+  chain_id             Int
+  tx_hash              String
+  block_number         Decimal @db.Decimal(78, 0)
+  timestamp            Decimal @db.Decimal(78, 0)
+  log_index            Int
+  vault                String
+  total_shares         Decimal @db.Decimal(78, 0)
+  total_borrows        Decimal @db.Decimal(78, 0)
+  accumulated_fees     Decimal @db.Decimal(78, 0)
+  cash                 Decimal @db.Decimal(78, 0)
+  interest_accumulator Decimal @db.Decimal(78, 0)
+  interest_rate        Decimal @db.Decimal(78, 0)
+  operation_id         Int     @id @default(autoincrement())
+  operation            Int
+  checkpoint           String  @db.VarChar(75)
+
+  @@map("_reorg__vaultStatus")
+}
+
+model reorg__withdraw {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  sender       String
+  receiver     String
+  owner        String
+  amount       Decimal @db.Decimal(78, 0)
+  share        Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(dbgenerated("nextval('_reorg__withdraw_operation_id_seq'::regclass)"))
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__withdraw")
+}
+
+model borrow {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+}
+
+model deposit {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  sender       String
+  owner        String
+  amount       Decimal @db.Decimal(78, 0)
+  share        Decimal @db.Decimal(78, 0)
+}
+
+model interestAccrued {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+}
+
+model liquidate {
+  id                String  @id
+  chain_id          Int
+  tx_hash           String
+  block_number      Decimal @db.Decimal(78, 0)
+  timestamp         Decimal @db.Decimal(78, 0)
+  log_index         Int
+  vault             String
+  liquidator        String
+  violator          String
+  repay_amount      Decimal @db.Decimal(78, 0)
+  collateral_shares Decimal @db.Decimal(78, 0)
+  collateral_asset  String
+}
+
+model pullDebt {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  from         String
+  to           String
+  amount       Decimal @db.Decimal(78, 0)
+}
+
+model repay {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+}
+
+model transfers {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  from         String
+  to           String
+  amount       Decimal @db.Decimal(78, 0)
+}
+
+model vaultCollateralDetails {
+  id                        String @id
+  chain_id                  Int
+  vault                     String
+  collateral_asset          String
+  collateral_asset_decimals Int
+  borrow_ltv                Int
+  liquidation_ltv           Int
+  initial_liquidation_ltv   Int
+  target_timestamp          Int
+  ramp_duration             Int
+}
+
+model vaultDetails {
+  id               String  @id
+  chain_id         Int
+  tx_hash          String
+  block_number     Decimal @db.Decimal(78, 0)
+  timestamp        Decimal @db.Decimal(78, 0)
+  log_index        Int
+  vault            String
+  creator          String
+  asset            String
+  asset_decimals   Int
+  d_token          String
+  d_token_decimals Int
+}
+
+model vaultStatus {
+  id                   String  @id
+  chain_id             Int
+  tx_hash              String
+  block_number         Decimal @db.Decimal(78, 0)
+  timestamp            Decimal @db.Decimal(78, 0)
+  log_index            Int
+  vault                String
+  total_shares         Decimal @db.Decimal(78, 0)
+  total_borrows        Decimal @db.Decimal(78, 0)
+  accumulated_fees     Decimal @db.Decimal(78, 0)
+  cash                 Decimal @db.Decimal(78, 0)
+  interest_accumulator Decimal @db.Decimal(78, 0)
+  interest_rate        Decimal @db.Decimal(78, 0)
+}
+
+model withdraw {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  sender       String
+  receiver     String
+  owner        String
+  amount       Decimal @db.Decimal(78, 0)
+  share        Decimal @db.Decimal(78, 0)
+}
+
+model reorg__debtSocialization {
+  id           String
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(autoincrement())
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__debtSocialization")
+}
+
+model reorg__ownerRegistered {
+  id             String
+  chain_id       Int
+  tx_hash        String
+  block_number   Decimal @db.Decimal(78, 0)
+  timestamp      Decimal @db.Decimal(78, 0)
+  log_index      Int
+  address_prefix String
+  owner          String
+  operation_id   Int     @id @default(autoincrement())
+  operation      Int
+  checkpoint     String  @db.VarChar(75)
+
+  @@map("_reorg__ownerRegistered")
+}
+
+model reorg__vaultGovernanceConfig {
+  id                    String
+  chain_id              Int
+  vault                 String
+  interest_rate_address String
+  supply_cap            Int
+  interest_fee          Int
+  operation_id          Int    @id @default(autoincrement())
+  operation             Int
+  checkpoint            String @db.VarChar(75)
+
+  @@map("_reorg__vaultGovernanceConfig")
+}
+
+model debtSocialization {
+  id           String  @id
+  chain_id     Int
+  tx_hash      String
+  block_number Decimal @db.Decimal(78, 0)
+  timestamp    Decimal @db.Decimal(78, 0)
+  log_index    Int
+  vault        String
+  account      String
+  amount       Decimal @db.Decimal(78, 0)
+}
+
+model ownerRegistered {
+  id             String  @id
+  chain_id       Int
+  tx_hash        String
+  block_number   Decimal @db.Decimal(78, 0)
+  timestamp      Decimal @db.Decimal(78, 0)
+  log_index      Int
+  address_prefix String
+  owner          String
+}
+
+model vaultGovernanceConfig {
+  id                    String @id
+  chain_id              Int
+  vault                 String
+  interest_rate_address String
+  supply_cap            Int
+  interest_fee          Int
+}
+
+model reorg__adaptiveInterestRateModel {
+  id                     String
+  chain_id               Int
+  address                String
+  target_utilization     Decimal @db.Decimal(78, 0)
+  initial_rate_at_target Decimal @db.Decimal(78, 0)
+  min_rate_at_target     Decimal @db.Decimal(78, 0)
+  max_rate_at_target     Decimal @db.Decimal(78, 0)
+  curve_steepness        Decimal @db.Decimal(78, 0)
+  adjustment_speed       Decimal @db.Decimal(78, 0)
+  operation_id           Int     @id @default(autoincrement())
+  operation              Int
+  checkpoint             String  @db.VarChar(75)
+
+  @@map("_reorg__adaptiveInterestRateModel")
+}
+
+model reorg__interestRateModel {
+  id           String
+  chain_id     Int
+  address      String
+  base_rate    Decimal @db.Decimal(78, 0)
+  kink         Decimal @db.Decimal(78, 0)
+  slope1       Decimal @db.Decimal(78, 0)
+  slope2       Decimal @db.Decimal(78, 0)
+  operation_id Int     @id @default(autoincrement())
+  operation    Int
+  checkpoint   String  @db.VarChar(75)
+
+  @@map("_reorg__interestRateModel")
+}
+
+model adaptiveInterestRateModel {
+  id                     String  @id
+  chain_id               Int
+  address                String
+  target_utilization     Decimal @db.Decimal(78, 0)
+  initial_rate_at_target Decimal @db.Decimal(78, 0)
+  min_rate_at_target     Decimal @db.Decimal(78, 0)
+  max_rate_at_target     Decimal @db.Decimal(78, 0)
+  curve_steepness        Decimal @db.Decimal(78, 0)
+  adjustment_speed       Decimal @db.Decimal(78, 0)
+}
+
+model interestRateModel {
+  id        String  @id
+  chain_id  Int
+  address   String
+  base_rate Decimal @db.Decimal(78, 0)
+  kink      Decimal @db.Decimal(78, 0)
+  slope1    Decimal @db.Decimal(78, 0)
+  slope2    Decimal @db.Decimal(78, 0)
+}
