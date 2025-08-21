@@ -25,7 +25,7 @@ export function computeGreedyReturns({
   assetDecimals: number;
   vaultDetails: Record<string, VaultDetails>;
   allocation: Record<string, AllocationDetails>;
-  log?: boolean
+  log?: boolean;
 }) {
   let returns = 0;
   let totalAllocation = 0;
@@ -58,14 +58,22 @@ export function computeGreedyReturns({
       returns += newAmount * (postImpactAPY + postImpactRewardAPY);
 
       if (log)
-        console.log('Returns', vaultInfo.vault, "Supply APY: ", postImpactAPY, "Rewards APY:", postImpactRewardAPY, "Total: ", postImpactAPY + postImpactRewardAPY);
+        console.log(
+          'Returns',
+          vaultInfo.vault,
+          'Supply APY: ',
+          postImpactAPY,
+          'Rewards APY:',
+          postImpactRewardAPY,
+          'Total: ',
+          postImpactAPY + postImpactRewardAPY,
+        );
     } // Can add more protocols here
   });
 
   const totalRewards = totalAllocation ? returns / totalAllocation : 0;
 
-  if (log)
-    console.log("Total rewards", totalRewards)
+  if (log) console.log('Total rewards', totalRewards);
 
-  return totalRewards
+  return totalRewards;
 }

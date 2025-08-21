@@ -57,8 +57,8 @@ export async function executeRebalance({
 
   const marketAllocations = Object.entries(allocation).map(([strategy, { newAmount }]) => ({
     id: parseContractAddress(strategy),
-    assets: strategy === idleVaultAddress ? maxUint256 : newAmount
-  }))
+    assets: strategy === idleVaultAddress ? maxUint256 : newAmount,
+  }));
 
   batchItems.push({
     targetContract: earnVaultAddress,
@@ -71,17 +71,15 @@ export async function executeRebalance({
     }),
   });
 
-  // const { request } = await rpcClient.simulateContract({
-  //   account,
-  //   address: evcAddress,
-  //   abi: EvcAbi,
-  //   functionName: 'batch',
-  //   args: [batchItems],
-  // });
-  // const hash = await walletClient.writeContract(request);
-  // const receipt = await rpcClient.waitForTransactionReceipt({ hash });
+  const { request } = await rpcClient.simulateContract({
+    account,
+    address: evcAddress,
+    abi: EvcAbi,
+    functionName: 'batch',
+    args: [batchItems],
+  });
+  const hash = await walletClient.writeContract(request);
+  const receipt = await rpcClient.waitForTransactionReceipt({ hash });
 
-  // return receipt.transactionHash;
-
-  process.exit()
+  return receipt.transactionHash;
 }

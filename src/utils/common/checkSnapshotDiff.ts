@@ -89,10 +89,18 @@ export function checkAllocationDiff({
   return true;
 }
 
+export function checkAllocationTotals(
+  strategies: Strategies,
+  allocations: Record<string, AllocationDetails>,
+) {
+  const totalAssets = Object.values(strategies.allocations).reduce(
+    (accu, amount) => accu + amount,
+    0n,
+  );
+  const totalAllocated = Object.values(allocations).reduce(
+    (accu, allocation) => accu + allocation.newAmount,
+    0n,
+  );
 
-export function checkAllocationTotals(strategies: Strategies, allocations: Record<string, AllocationDetails>) {
-  const totalAssets = Object.values(strategies.allocations).reduce((accu, amount) => accu + amount, 0n)
-  const totalAllocated = Object.values(allocations).reduce((accu, allocation) => accu + allocation.newAmount, 0n)
-
-  return totalAssets !== totalAllocated
+  return totalAssets !== totalAllocated;
 }

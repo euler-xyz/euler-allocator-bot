@@ -40,7 +40,7 @@ export async function getEulerRewardCampigns({
 }) {
   const data: MerklData[] = await fetch(
     `https://api.merkl.xyz/v4/campaigns/?chainId=${chainId}&type=EULER`,
-    { signal: AbortSignal.timeout(15000) } // TODO config
+    { signal: AbortSignal.timeout(15000) }, // TODO config
   ).then(response => response.json());
 
   if (!data || !data.length) {

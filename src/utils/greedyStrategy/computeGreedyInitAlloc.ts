@@ -1,4 +1,9 @@
-import { type AllocationDetails, allocationDetailsSchema, Strategies, type VaultDetails } from '@/types/types';
+import {
+  type AllocationDetails,
+  allocationDetailsSchema,
+  Strategies,
+  type VaultDetails,
+} from '@/types/types';
 import { Address } from 'viem';
 
 /**
@@ -19,7 +24,6 @@ function loopGreedy(
   const allocations: Record<string, AllocationDetails> = {};
   let amountLeft = allocatableAmount;
 
-
   sortedVaultsDesc.forEach(vault => {
     const currentAmount = strategies.allocations[vault.vault];
     const strategyCapAvailable = strategies.caps[vault.vault] - currentAmount;
@@ -28,9 +32,7 @@ function loopGreedy(
     if (diff > 0) {
       let availableToDeposit = vault.supplyCap - vault.cash - vault.totalBorrows;
       availableToDeposit =
-      availableToDeposit <= strategyCapAvailable
-      ? availableToDeposit
-      : strategyCapAvailable;
+        availableToDeposit <= strategyCapAvailable ? availableToDeposit : strategyCapAvailable;
 
       actualDiff = diff > availableToDeposit ? availableToDeposit : diff;
     } else if (diff < 0) {
@@ -88,24 +90,20 @@ export function computeGreedyInitAlloc({
   idleVaultAddress,
 }: {
   vaultDetails: Record<string, VaultDetails>;
-  strategies: Strategies,
+  strategies: Strategies;
   allocatableAmount: bigint;
   cashAmount: bigint;
   idleVaultAddress: Address;
 }) {
-  const [allocations, amountLeft] = loopGreedy(
-    vaultDetails,
-    strategies,
-    allocatableAmount,
-  );
+  const [allocations, amountLeft] = loopGreedy(vaultDetails, strategies, allocatableAmount);
 
   if (amountLeft !== 0n) {
-    throw new Error("Non-zero amount left")
+    throw new Error('Non-zero amount left');
     // handleCornerCases(vaultDetails, allocations, amountLeft);
   }
 
-  allocations[idleVaultAddress].newAmount += cashAmount
-  allocations[idleVaultAddress].diff += cashAmount
+  allocations[idleVaultAddress].newAmount += cashAmount;
+  allocations[idleVaultAddress].diff += cashAmount;
 
   return allocations;
 }

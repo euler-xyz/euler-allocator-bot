@@ -117,11 +117,7 @@ class Allocator {
           return [strategy.vaultAddress, vault] as const;
         } // Can add more protocols here
       }),
-    ).then(results =>
-      Object.fromEntries(
-        results.filter((entry) => entry !== undefined),
-      ),
-    );
+    ).then(results => Object.fromEntries(results.filter(entry => entry !== undefined)));
   }
 
   /**
@@ -144,9 +140,11 @@ class Allocator {
             return [strategy.strategy, strategy.currentAllocationCap];
           }),
         ),
-        idleVaultAddress: (lensData.supplyQueue.length > 0 ? lensData.supplyQueue.at(-1) : zeroAddress) as Address
-      }
-    }
+        idleVaultAddress: (lensData.supplyQueue.length > 0
+          ? lensData.supplyQueue.at(-1)
+          : zeroAddress) as Address,
+      };
+    };
     const getAllocations = async () => {
       return Promise.all(
         this.strategies.map(async strategy => {
@@ -170,17 +168,18 @@ class Allocator {
             return [strategy.vaultAddress, amount] as const;
           } // Can add more protocols here
         }),
-      ).then(results =>
-        Object.fromEntries(results.filter((entry) => entry !== undefined)),
-      )
-    }
+      ).then(results => Object.fromEntries(results.filter(entry => entry !== undefined)));
+    };
 
-    const [{caps, idleVaultAddress}, allocations] = await Promise.all([getCapsAndIdle(), getAllocations()])
+    const [{ caps, idleVaultAddress }, allocations] = await Promise.all([
+      getCapsAndIdle(),
+      getAllocations(),
+    ]);
     return {
       caps,
       allocations,
       idleVaultAddress,
-    }
+    };
   }
 
   /**
@@ -212,15 +211,18 @@ class Allocator {
   ) {
     /** Check if all assets are allocated */
     if (checkAllocationTotals(strategies, finalAllocation)) {
-      throw new Error("Total assets / total allocated mismatch")
+      throw new Error('Total assets / total allocated mismatch');
     }
 
     /** Check if allocation changes are significant */
-    if(checkAllocationDiff({
-      assetDecimals: this.assetDecimals,
-      allocation: finalAllocation,
-      tolerance: this.allocationDiffTolerance,
-    })) return true;
+    if (
+      checkAllocationDiff({
+        assetDecimals: this.assetDecimals,
+        allocation: finalAllocation,
+        tolerance: this.allocationDiffTolerance,
+      })
+    )
+      return true;
 
     return false;
   }
@@ -235,16 +237,14 @@ class Allocator {
     /** Get strategy allocations and caps */
     const strategies = await this.getStrategies(vaultDetails);
 
-    const idleAmount = 30000000000000n
-    strategies.allocations['0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE'] = idleAmount
-    vaultDetails['0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE'].cash = idleAmount
+    const idleAmount = 30000000000000n;
+    strategies.allocations['0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE'] = idleAmount;
+    vaultDetails['0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE'].cash = idleAmount;
 
     console.log('strategyAmounts: ', strategies.allocations);
 
     /** Get allocatable amount and cash amount based on target cash reserve percentage */
-    const [allocatableAmount, cashAmount] = this.getAllocatableAmount(
-      strategies.allocations
-    );
+    const [allocatableAmount, cashAmount] = this.getAllocatableAmount(strategies.allocations);
     console.log('allocatableAmount: ', allocatableAmount);
     console.log('cashAmount: ', cashAmount);
     if (allocatableAmount + cashAmount === BigInt(0)) return;
@@ -302,11 +302,11 @@ class Allocator {
       idleVaultAddress: strategies.idleVaultAddress,
     });
 
-    /** Send notification */
-    await sendTelegramMessage({
-      message: `Portfolio Rebalance\n https://basescan.org/tx/${txHash}`,
-      type: 'info',
-    });
+    // /** Send notification */
+    // await sendTelegramMessage({
+    //   message: `Portfolio Rebalance\n https://basescan.org/tx/${txHash}`,
+    //   type: 'info',
+    // });
   }
 }
 

@@ -94,11 +94,11 @@ export type EvkVaultLensData = AbiParametersToPrimitiveTypes<
 >[0];
 
 export type Strategies = {
-    caps: {
-        [k: string]: bigint;
-    };
-    allocations: {
-        [k: string]: bigint;
-    };
-    idleVaultAddress: Address;
-}
+  caps: {
+    [k: string]: bigint;
+  };
+  allocations: {
+    [k: string]: bigint;
+  };
+  idleVaultAddress: Address;
+};
