@@ -14,9 +14,8 @@ import {
   checkVaultDetailsDiff,
 } from '@/utils/common/checkSnapshotDiff';
 import { executeRebalance } from '@/utils/common/executeRebalance';
-import { getBalanceOf, getTotalAllocationPoints } from '@/utils/common/onChainHelpers';
 import { parseContractAddress } from '@/utils/common/parser';
-import { getEulerBalanceOf } from '@/utils/euler/getEulerBalanceOf';
+import { getEulerEarnInternalBalance } from '@/utils/euler/getEulerEarnInternalBalance';
 import { getEulerVaultDetails } from '@/utils/euler/getEulerVaultDetails';
 import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInitAlloc';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
@@ -42,7 +41,6 @@ class Allocator {
   private evkVaultLensAddress: Address;
   private eulerEarnLensAddress: Address;
   private strategies: StrategyConstants[];
-  private totalAllocationPoints: bigint;
   private rpcClient: PublicClient;
 
   /**
@@ -92,7 +90,6 @@ class Allocator {
     this.evkVaultLensAddress = evkVaultLensAddress;
     this.eulerEarnLensAddress = eulerEarnLensAddress;
     this.strategies = strategies;
-    this.totalAllocationPoints = BigInt(0);
     this.rpcClient = rpcClient;
   }
 
@@ -148,15 +145,8 @@ class Allocator {
     const getAllocations = async () => {
       return Promise.all(
         this.strategies.map(async strategy => {
-          if (strategy.vaultAddress === zeroAddress) {
-            const amount = await getBalanceOf({
-              address: this.earnVaultAddress,
-              tokenAddress: this.assetContractAddress,
-              rpcClient: this.rpcClient,
-            });
-            return [strategy.vaultAddress, amount] as const;
-          } else if (strategy.protocol === protocolSchema.Enum.euler) {
-            const amount = await getEulerBalanceOf({
+          if (strategy.protocol === protocolSchema.Enum.euler) {
+            const amount = await getEulerEarnInternalBalance({
               address: this.earnVaultAddress,
               vaultAddress: parseContractAddress(strategy.vaultAddress),
               cash: vaultDetails[strategy.vaultAddress].cash,

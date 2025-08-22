@@ -27,24 +27,3 @@ export async function getBalanceOf({
   return balance;
 }
 
-/**
- * @notice Gets the total allocation points for an Euler Earn vault
- * @param earnVaultAddress The address of the Euler Earn vault
- * @param rpcClient The RPC client to use for the contract call
- * @returns The total allocation points
- */
-export async function getTotalAllocationPoints({
-  earnVaultAddress,
-  rpcClient,
-}: {
-  earnVaultAddress: Address;
-  rpcClient: PublicClient;
-}) {
-  const totalAllocationPoints = await rpcClient.readContract({
-    address: earnVaultAddress,
-    abi: EulerEarnAbi,
-    functionName: 'totalAllocationPoints',
-  });
-
-  return totalAllocationPoints;
-}
