@@ -1,6 +1,6 @@
-# Allocator
+# Euler Allocator Bot
 
-Gratefully based on original work from [Objective Labs](https://github.com/objectivedefi)
+A bot which uses simulated annealing to find optimal allocations into EulerEarn strategies. It simulates reallocations and calculates impact on the lending and rewards APYs, searching for global optimum.
 
 ## Prerequisites
 
@@ -19,10 +19,13 @@ pnpm install
 cp .env.example .env
 # Edit .env with your configuration
 ```
+See [constants](./src/constants/constants.ts) for details.
 
-3. Generate Prisma schema and client:
+3. Run
 ```bash
-pnpm generate-schema
+pnpm run dev
+#or
+pnpm run build & pnpm start
 ```
 
 ## Code Style
