@@ -15,7 +15,7 @@ RUN pnpm install
 COPY . .
 
 # Build TypeScript
-RUN pnpm prisma:generate && pnpm build
+RUN pnpm build
 
 # Run the application
 CMD ["pnpm", "start"] 
