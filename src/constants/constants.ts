@@ -32,7 +32,7 @@ const ENV = {
   CHAIN_ID: Number(parseEnvVar(process.env.CHAIN_ID)),
   /** @notice Address of the earn vault */
   EARN_VAULT_ADDRESS: parseContractAddress(parseEnvVar(process.env.EARN_VAULT_ADDRESS)),
-  /** @notice Address of the EVC contract */
+  /** @notice Address of the EVC contract, see euler-interfaces repo for deployed addresses */
   EVC_ADDRESS: parseContractAddress(parseEnvVar(process.env.EVC_ADDRESS)),
   /** @notice Time between allocation checks in milliseconds */
   INTERVAL_TIME: Number(parseEnvVar(process.env.INTERVAL_TIME)),
@@ -40,9 +40,9 @@ const ENV = {
   RPC_URL: parseEnvVar(process.env.RPC_URL),
   /** @notice Comma-separated list of protocol:address pairs for allocation strategies */
   STRATEGIES: parseStrategies(parseEnvVar(process.env.STRATEGIES).split(',')),
-  /** @notice Address of the VaultLens contract */
+  /** @notice Address of the VaultLens contract, see euler-interfaces repo for deployed addresses */
   VAULT_LENS_ADDRESS: parseContractAddress(parseEnvVar(process.env.VAULT_LENS_ADDRESS)),
-  /** @notice Address of the EulerEarnVaultLens contract */
+  /** @notice Address of the EulerEarnVaultLens contract, see euler-interfaces repo for deployed addresses */
   EULER_EARN_VAULT_LENS_ADDRESS: parseContractAddress(
     parseEnvVar(process.env.EULER_EARN_VAULT_LENS_ADDRESS),
   ),

@@ -227,7 +227,7 @@ class Allocator {
     /** Get strategy allocations and caps */
     const strategies = await this.getStrategies(vaultDetails);
 
-    // const idleAmount = 30000000000000n;
+    // const idleAmount = 10000000000000n;
     // strategies.allocations['0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE'] = idleAmount;
     // vaultDetails['0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE'].cash = idleAmount;
 

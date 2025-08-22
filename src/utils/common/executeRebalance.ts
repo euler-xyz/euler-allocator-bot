@@ -12,6 +12,7 @@ import {
   type PublicClient,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { calculateEulerEarnAllocations } from '../euler/calculateEulerEarnAllocations';
 
 /**
  * @notice Executes a rebalance operation by adjusting allocation points and calling rebalance
@@ -55,11 +56,9 @@ export async function executeRebalance({
     data: `0x${string}`;
   }[] = [];
 
-  const marketAllocations = Object.entries(allocation).map(([strategy, { newAmount }]) => ({
-    id: parseContractAddress(strategy),
-    assets: strategy === idleVaultAddress ? maxUint256 : newAmount,
-  }));
+  const marketAllocations = calculateEulerEarnAllocations(allocation)
 
+  console.log('marketAllocations: ', marketAllocations);
   batchItems.push({
     targetContract: earnVaultAddress,
     onBehalfOfAccount: account.address,
@@ -70,7 +69,7 @@ export async function executeRebalance({
       args: [marketAllocations],
     }),
   });
-
+// process.exit()
   const { request } = await rpcClient.simulateContract({
     account,
     address: evcAddress,
