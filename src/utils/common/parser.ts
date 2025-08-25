@@ -30,8 +30,8 @@ export function parseDecimalToBigInt(decimalValue: Decimal) {
  * @param strategies - The list of strategies to parse
  * @returns An array of objects with protocol and vault address
  */
-export function parseStrategies(strategies: string[]) {
-  return strategies.map(strategy => {
+export function parseStrategies(strategies?: string[]) {
+  return strategies?.map(strategy => {
     const [protocol, vaultAddress] = strategy.split(':');
     return strategyConstantsSchema.parse({
       protocol,

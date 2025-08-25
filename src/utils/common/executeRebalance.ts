@@ -19,7 +19,6 @@ import { calculateEulerEarnAllocations } from '../euler/calculateEulerEarnAlloca
  * @dev Uses EVC batch functionality to execute multiple transactions atomically
  * @param allocation Record mapping strategy addresses to their allocation details
  * @param allocatorPrivateKey Private key of the allocator account
- * @param assetDecimals Decimal precision of the asset
  * @param earnVaultAddress Address of the Euler Earn vault contract
  * @param evcAddress Address of the EVC contract
  * @param rpcClient Public client for RPC interactions
@@ -28,19 +27,15 @@ import { calculateEulerEarnAllocations } from '../euler/calculateEulerEarnAlloca
 export async function executeRebalance({
   allocation,
   allocatorPrivateKey,
-  assetDecimals,
   earnVaultAddress,
   evcAddress,
   rpcClient,
-  idleVaultAddress,
 }: {
   allocation: Record<string, AllocationDetails>;
   allocatorPrivateKey: Hex;
-  assetDecimals: number;
   earnVaultAddress: Address;
   evcAddress: Address;
   rpcClient: PublicClient;
-  idleVaultAddress: Address;
 }) {
   const account = privateKeyToAccount(allocatorPrivateKey);
   const walletClient = createWalletClient({
@@ -58,7 +53,6 @@ export async function executeRebalance({
 
   const marketAllocations = calculateEulerEarnAllocations(allocation)
 
-  console.log('marketAllocations: ', marketAllocations);
   batchItems.push({
     targetContract: earnVaultAddress,
     onBehalfOfAccount: account.address,

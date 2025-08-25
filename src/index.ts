@@ -10,15 +10,13 @@ const allocator = new Allocator({
   allocatorPrivateKey: ENV.ALLOCATOR_PRIVATE_KEY,
   amountSnapshotTolerance: ENV.AMOUNT_SNAPSHOT_TOLERANCE,
   apyTolerance: ENV.APY_TOLERANCE,
-  assetContractAddress: ENV.ASSET_CONTRACT_ADDRESS,
-  assetDecimals: ENV.ASSET_DECIMALS,
   cashPercentage: ENV.CASH_PERCENTAGE,
   chainId: ENV.CHAIN_ID,
   earnVaultAddress: ENV.EARN_VAULT_ADDRESS,
   evcAddress: ENV.EVC_ADDRESS,
   evkVaultLensAddress: ENV.VAULT_LENS_ADDRESS,
   eulerEarnLensAddress: ENV.EULER_EARN_VAULT_LENS_ADDRESS,
-  strategies: ENV.STRATEGIES,
+  strategiesOverride: ENV.STRATEGIES_OVERRIDE,
   rpcClient,
 });
 

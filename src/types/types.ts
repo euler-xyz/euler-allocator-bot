@@ -31,7 +31,7 @@ export type RewardCampaign = z.infer<typeof rewardCampaignSchema>;
 /**
  * @notice Schema for vault details containing current state and configuration
  */
-export const vaultDetailsSchema = z.object({
+export const strategyDetailsSchema = z.object({
   vault: addressSchema,
   protocol: protocolSchema,
   borrowAPY: z.number(),
@@ -45,7 +45,7 @@ export const vaultDetailsSchema = z.object({
   supplyCap: z.bigint(),
   irmConfig: z.union([eulerIrmSchema, eulerAdaptiveIrmSchema, eulerNoIrmSchema]),
 });
-export type VaultDetails = z.infer<typeof vaultDetailsSchema>;
+export type StrategyDetails = z.infer<typeof strategyDetailsSchema>;
 
 /**
  * @notice Configuration constants for a lending strategy
@@ -86,19 +86,26 @@ export const merklDataSchema = z.object({
     price: z.number(),
   }),
 });
+
 export type MerklData = z.infer<typeof merklDataSchema>;
+
+export type ProtocolEnum = z.infer<typeof protocolSchema>;
 
 export type EvkVaultLensData = AbiParametersToPrimitiveTypes<
   ExtractAbiFunction<typeof VaultLensAbi, 'getVaultInfoFull'>['outputs'],
   'outputs'
 >[0];
 
-export type Strategies = {
-  caps: {
-    [k: string]: bigint;
-  };
-  allocations: {
-    [k: string]: bigint;
+export type EulerEarn = {
+  strategies: {
+    [k: string]: {
+      cap: bigint;
+      protocol: ProtocolEnum;
+      allocation: bigint;
+      details: StrategyDetails;
+    }
   };
   idleVaultAddress: Address;
+  assetDecimals: number;
+  initialAllocationQueue: Address[];
 };

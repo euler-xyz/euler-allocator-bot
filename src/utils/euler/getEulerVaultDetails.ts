@@ -1,5 +1,5 @@
 import { VaultLensAbi } from '@/constants/VaultLensAbi';
-import { protocolSchema, type VaultDetails, vaultDetailsSchema } from '@/types/types';
+import { protocolSchema, StrategyDetails, strategyDetailsSchema } from '@/types/types';
 import { getEulerIrmConfig } from '@/utils/euler/getEulerIrmConfig';
 import { getEulerRewardCampigns } from '@/utils/euler/getEulerRewardCampigns';
 import {
@@ -17,7 +17,6 @@ import { type Address, type PublicClient } from 'viem';
  * @param chainId The chain ID of the vault
  * @param vaultAddress The address of the vault to query
  * @param lensAddress The address of the vault lens contract
- * @param prismaClient Database client instance for querying vault status and config
  * @param rpcClient RPC client instance for querying on-chain data
  * @returns VaultDetails object containing current vault state
  * @throws Will throw if vault status or config not found in database
@@ -34,7 +33,7 @@ export async function getEulerVaultDetails({
   vaultAddress: Address;
   lensAddress: Address;
   rpcClient: PublicClient;
-}): Promise<VaultDetails> {
+}): Promise<StrategyDetails> {
   const lensData = await rpcClient.readContract({
     address: lensAddress,
     abi: VaultLensAbi,
@@ -81,7 +80,7 @@ export async function getEulerVaultDetails({
     rewardCampaigns,
   });
 
-  return vaultDetailsSchema.parse({
+  return strategyDetailsSchema.parse({
     vault: vaultAddress,
     protocol: protocolSchema.Enum.euler,
     borrowAPY,

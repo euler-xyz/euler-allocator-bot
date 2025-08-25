@@ -1,4 +1,4 @@
-import { Strategies, type AllocationDetails, type VaultDetails } from '@/types/types';
+import { EulerEarn, Strategies, type AllocationDetails, type VaultDetails } from '@/types/types';
 import { parseBigIntToNumberWithScale } from '@/utils/common/parser';
 
 /**
@@ -90,11 +90,11 @@ export function checkAllocationDiff({
 }
 
 export function checkAllocationTotals(
-  strategies: Strategies,
+  vault: EulerEarn,
   allocations: Record<string, AllocationDetails>,
 ) {
-  const totalAssets = Object.values(strategies.allocations).reduce(
-    (accu, amount) => accu + amount,
+  const totalAssets = Object.values(vault.strategies).reduce(
+    (accu, { allocation }) => accu + allocation,
     0n,
   );
   const totalAllocated = Object.values(allocations).reduce(
