@@ -14,7 +14,11 @@
         "docker:clean": "docker compose down -v",
         "docker:build": "docker compose build --no-cache",
         "docker:up": "docker compose up",
-        "docker:fresh": "pnpm docker:clean && pnpm docker:build && pnpm docker:up"
+        "docker:fresh": "pnpm docker:clean && pnpm docker:build && pnpm docker:up",
+        "doppler:login": "./scripts/dopplerLogin.sh",
+        "doppler:syncdev": "TOKEN=dev ./scripts/dopplerSync.sh",
+        "doppler:syncstg": "TOKEN=stg ./scripts/dopplerSync.sh",
+        "doppler:syncprd": "TOKEN=prd ./scripts/dopplerSync.sh"
     },
     "dependencies": {
         "@prisma/client": "4.16.2",
