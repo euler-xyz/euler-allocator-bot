@@ -1,8 +1,4 @@
-import {
-  type AllocationDetails,
-  allocationDetailsSchema,
-  EulerEarn,
-} from '@/types/types';
+import { Allocation, allocationDetailsSchema, EulerEarn } from '@/types/types';
 
 /**
  * @notice Greedily allocates funds to vaults in order of descending supply APY
@@ -10,15 +6,13 @@ import {
  * @dev Returns amount in a dict so that it can be modified implicitly
  * @returns Tuple of [allocations per vault, remaining unallocated amount]
  */
-function loopGreedy(
-  vault: EulerEarn,
-  allocatableAmount: bigint,
-) {
+function loopGreedy(vault: EulerEarn, allocatableAmount: bigint) {
   const sortedVaultsDesc = Object.entries(vault.strategies).sort(
-    ([, a], [, b]) => b.details.supplyAPY + b.details.rewardAPY - (a.details.supplyAPY + a.details.rewardAPY),
+    ([, a], [, b]) =>
+      b.details.supplyAPY + b.details.rewardAPY - (a.details.supplyAPY + a.details.rewardAPY),
   );
 
-  const allocations: Record<string, AllocationDetails> = {};
+  const allocations: Allocation = {};
   let amountLeft = allocatableAmount;
 
   sortedVaultsDesc.forEach(([strategyAddress, strategy]) => {
@@ -27,7 +21,8 @@ function loopGreedy(
     const diff = amountLeft - currentAmount;
     let actualDiff = BigInt(0);
     if (diff > 0) {
-      let availableToDeposit = strategy.details.supplyCap - strategy.details.cash - strategy.details.totalBorrows;
+      let availableToDeposit =
+        strategy.details.supplyCap - strategy.details.cash - strategy.details.totalBorrows;
       availableToDeposit =
         availableToDeposit <= strategyCapAvailable ? availableToDeposit : strategyCapAvailable;
 

@@ -1,6 +1,6 @@
 import { zeroAddress } from 'viem';
 import Allocator from '../../../src/modules/Allocator';
-import { type AllocationDetails } from '../../../src/types/types';
+import { Allocation } from '../../../src/types/types';
 
 jest.mock('../../../src/utils/common/onChainHelpers', () => ({
   getTotalAllocationPoints: () => BigInt('300000000000000000000'),
@@ -25,7 +25,7 @@ describe('Allocator', () => {
     });
 
     it('case - normal', async () => {
-      const finalAllocation: Record<string, AllocationDetails> = {
+      const finalAllocation: Allocation = {
         [zeroAddress]: {
           oldAmount: BigInt(0 * 1e6),
           newAmount: BigInt(500 * 1e6),
@@ -50,7 +50,7 @@ describe('Allocator', () => {
       expect(result['0x2'].toString()).toBe('100000000000000000000');
     });
     it('case - underflows so we add to cash strategy', async () => {
-      const finalAllocation: Record<string, AllocationDetails> = {
+      const finalAllocation: Allocation = {
         [zeroAddress]: {
           oldAmount: BigInt(0 * 1e6),
           newAmount: BigInt(500 * 1e6),

@@ -33,6 +33,7 @@ export type RewardCampaign = z.infer<typeof rewardCampaignSchema>;
  */
 export const strategyDetailsSchema = z.object({
   vault: addressSchema,
+  symbol: z.string(),
   protocol: protocolSchema,
   borrowAPY: z.number(),
   supplyAPY: z.number(),
@@ -65,6 +66,8 @@ export const allocationDetailsSchema = z.object({
   diff: z.bigint(),
 });
 export type AllocationDetails = z.infer<typeof allocationDetailsSchema>;
+
+export type Allocation = Record<string, AllocationDetails>;
 
 /**
  * @notice Schema for Merkl
@@ -103,9 +106,16 @@ export type EulerEarn = {
       protocol: ProtocolEnum;
       allocation: bigint;
       details: StrategyDetails;
-    }
+    };
   };
   idleVaultAddress: Address;
   assetDecimals: number;
   initialAllocationQueue: Address[];
+};
+
+export type ReturnsDetails = {
+  [key: Address]: {
+    interestAPY: number;
+    rewardsAPY: number;
+  };
 };

@@ -17,6 +17,7 @@ const allocator = new Allocator({
   evkVaultLensAddress: ENV.VAULT_LENS_ADDRESS,
   eulerEarnLensAddress: ENV.EULER_EARN_VAULT_LENS_ADDRESS,
   strategiesOverride: ENV.STRATEGIES_OVERRIDE,
+  broadcast: ENV.BROADCAST,
   rpcClient,
 });
 

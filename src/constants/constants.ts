@@ -32,12 +32,14 @@ const ENV = {
   EVC_ADDRESS: parseContractAddress(parseEnvVar(process.env.EVC_ADDRESS)),
   /** @notice Time between allocation checks in milliseconds */
   INTERVAL_TIME: Number(parseEnvVar(process.env.INTERVAL_TIME)),
+  /** @notice If "true", the tx will be executed */
+  BROADCAST: parseEnvVar(process.env.BROADCAST).toLowerCase() === 'true',
   /** @notice URL of the RPC endpoint for blockchain connection */
   RPC_URL: parseEnvVar(process.env.RPC_URL),
   /** @notice Optional comma-separated list of protocol:address pairs for allocation strategies. Can be used to only allocate
    * to selected strategies. Idle vault must be included if CASH_PERCENTAGE > 0.
    */
-  STRATEGIES_OVERRIDE: parseStrategies(parseEnvVar(process.env.STRATEGIES).split(',')),
+  STRATEGIES_OVERRIDE: parseStrategies(process.env.STRATEGIES_OVERRIDE?.split(',')),
   /** @notice Address of the VaultLens contract, see euler-interfaces repo for deployed addresses */
   VAULT_LENS_ADDRESS: parseContractAddress(parseEnvVar(process.env.VAULT_LENS_ADDRESS)),
   /** @notice Address of the EulerEarnVaultLens contract, see euler-interfaces repo for deployed addresses */

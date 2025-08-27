@@ -1,18 +1,16 @@
 import { EulerEarnAbi } from '@/constants/EulerEarnAbi';
 import { EvcAbi } from '@/constants/EvcAbi';
-import { type AllocationDetails } from '@/types/types';
-import { parseBigIntToNumberWithScale, parseContractAddress } from '@/utils/common/parser';
+import { Allocation } from '@/types/types';
 import {
   createWalletClient,
   encodeFunctionData,
   http,
-  maxUint256,
   type Address,
   type Hex,
   type PublicClient,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { calculateEulerEarnAllocations } from '../euler/calculateEulerEarnAllocations';
+import { calculateEulerEarnAllocations } from './calculateEulerEarnAllocations';
 
 /**
  * @notice Executes a rebalance operation by adjusting allocation points and calling rebalance
@@ -22,6 +20,7 @@ import { calculateEulerEarnAllocations } from '../euler/calculateEulerEarnAlloca
  * @param earnVaultAddress Address of the Euler Earn vault contract
  * @param evcAddress Address of the EVC contract
  * @param rpcClient Public client for RPC interactions
+ * @param broadcast If true, execute the tx, otherwise just simulate
  * @return Transaction hash of the executed batch transaction
  */
 export async function executeRebalance({
@@ -30,12 +29,14 @@ export async function executeRebalance({
   earnVaultAddress,
   evcAddress,
   rpcClient,
+  broadcast,
 }: {
-  allocation: Record<string, AllocationDetails>;
+  allocation: Allocation;
   allocatorPrivateKey: Hex;
   earnVaultAddress: Address;
   evcAddress: Address;
   rpcClient: PublicClient;
+  broadcast: boolean;
 }) {
   const account = privateKeyToAccount(allocatorPrivateKey);
   const walletClient = createWalletClient({
@@ -51,7 +52,7 @@ export async function executeRebalance({
     data: `0x${string}`;
   }[] = [];
 
-  const marketAllocations = calculateEulerEarnAllocations(allocation)
+  const marketAllocations = calculateEulerEarnAllocations(allocation);
 
   batchItems.push({
     targetContract: earnVaultAddress,
@@ -63,7 +64,7 @@ export async function executeRebalance({
       args: [marketAllocations],
     }),
   });
-// process.exit()
+
   const { request } = await rpcClient.simulateContract({
     account,
     address: evcAddress,
@@ -71,8 +72,13 @@ export async function executeRebalance({
     functionName: 'batch',
     args: [batchItems],
   });
-  const hash = await walletClient.writeContract(request);
-  const receipt = await rpcClient.waitForTransactionReceipt({ hash });
 
-  return receipt.transactionHash;
+  if (broadcast) {
+    const hash = await walletClient.writeContract(request);
+    const receipt = await rpcClient.waitForTransactionReceipt({ hash });
+
+    return receipt.transactionHash;
+  } else {
+    console.log('Simulation only mode');
+  }
 }

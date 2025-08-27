@@ -16,6 +16,7 @@ import { type Address, type PublicClient } from 'viem';
  * @param assetDecimals The decimal precision of the asset
  * @param chainId The chain ID of the vault
  * @param vaultAddress The address of the vault to query
+ * @param vaultSymbol The symbol of the vault to query
  * @param lensAddress The address of the vault lens contract
  * @param rpcClient RPC client instance for querying on-chain data
  * @returns VaultDetails object containing current vault state
@@ -25,12 +26,14 @@ export async function getEulerVaultDetails({
   assetDecimals,
   chainId,
   vaultAddress,
+  vaultSymbol,
   lensAddress,
   rpcClient,
 }: {
   assetDecimals: number;
   chainId: number;
   vaultAddress: Address;
+  vaultSymbol: string;
   lensAddress: Address;
   rpcClient: PublicClient;
 }): Promise<StrategyDetails> {
@@ -82,6 +85,7 @@ export async function getEulerVaultDetails({
 
   return strategyDetailsSchema.parse({
     vault: vaultAddress,
+    symbol: vaultSymbol,
     protocol: protocolSchema.Enum.euler,
     borrowAPY,
     supplyAPY,

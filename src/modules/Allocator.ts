@@ -1,10 +1,5 @@
 import { EulerEarnVaultLensAbi } from '@/constants/EulerEarnVaultLensAbi';
-import {
-  EulerEarn,
-  protocolSchema,
-  type AllocationDetails,
-  type StrategyConstants,
-} from '@/types/types';
+import { Allocation, EulerEarn, protocolSchema, type StrategyConstants } from '@/types/types';
 import {
   checkAllocationDiff,
   checkAllocationTotals,
@@ -12,6 +7,8 @@ import {
   checkVaultDetailsDiff,
 } from '@/utils/common/checkSnapshotDiff';
 import { executeRebalance } from '@/utils/common/executeRebalance';
+import { getCurrentAllocation } from '@/utils/common/getCurrentAllocation';
+import { logRun } from '@/utils/common/log';
 import { parseContractAddress } from '@/utils/common/parser';
 import { getEulerEarnInternalBalance } from '@/utils/euler/getEulerEarnInternalBalance';
 import { getEulerVaultDetails } from '@/utils/euler/getEulerVaultDetails';
@@ -38,6 +35,7 @@ class Allocator {
   private eulerEarnLensAddress: Address;
   private strategiesOverride?: StrategyConstants[];
   private rpcClient: PublicClient;
+  private broadcast: boolean;
 
   /**
    * @notice Creates a new Allocator instance
@@ -55,6 +53,7 @@ class Allocator {
     eulerEarnLensAddress,
     strategiesOverride,
     rpcClient,
+    broadcast,
   }: {
     allocationDiffTolerance: number;
     allocatorPrivateKey: Hex;
@@ -68,6 +67,7 @@ class Allocator {
     eulerEarnLensAddress: Address;
     strategiesOverride?: StrategyConstants[];
     rpcClient: PublicClient;
+    broadcast: boolean;
   }) {
     this.allocationDiffTolerance = allocationDiffTolerance;
     this.allocatorPrivateKey = allocatorPrivateKey;
@@ -81,6 +81,7 @@ class Allocator {
     this.eulerEarnLensAddress = eulerEarnLensAddress;
     this.strategiesOverride = strategiesOverride;
     this.rpcClient = rpcClient;
+    this.broadcast = broadcast;
   }
 
   /**
@@ -103,6 +104,7 @@ class Allocator {
             assetDecimals: Number(lensData.assetDecimals),
             chainId: this.chainId,
             vaultAddress: parseContractAddress(strategy.strategy),
+            vaultSymbol: strategy.info.vaultSymbol,
             lensAddress: this.evkVaultLensAddress,
             rpcClient: this.rpcClient,
           });
@@ -116,24 +118,25 @@ class Allocator {
             chainId: this.chainId,
             rpcClient: this.rpcClient,
           });
-          return [strategy.strategy, {allocation, details}] as const;
+          return [strategy.strategy, { allocation, details }] as const;
         } else {
           // Can add more protocols here
-          throw new Error(`Unknown protocol ${strategy.strategy}`)
+          throw new Error(`Unknown protocol ${strategy.strategy}`);
         }
       }),
-    ).then(results =>
-      Object.fromEntries(results.filter((entry) => entry !== undefined)),
-    );
+    ).then(results => Object.fromEntries(results.filter(entry => entry !== undefined)));
 
     const config: EulerEarn = {
       strategies: Object.fromEntries(
         lensData.strategies.map(strategy => {
-          return [strategy.strategy, {
-            cap: strategy.currentAllocationCap,
-            protocol: protocolSchema.Enum.euler, // TODO handle
-            ...strategiesDetails[strategy.strategy]
-          }];
+          return [
+            strategy.strategy,
+            {
+              cap: strategy.currentAllocationCap,
+              protocol: protocolSchema.Enum.euler, // TODO handle
+              ...strategiesDetails[strategy.strategy],
+            },
+          ];
         }),
       ),
       idleVaultAddress: (lensData.supplyQueue.length > 0
@@ -145,13 +148,14 @@ class Allocator {
 
     if (this.strategiesOverride) {
       this.strategiesOverride.forEach(s => {
-        if (!config.strategies[s.vaultAddress]) throw new Error(`Invalid strategies override entry ${s.vaultAddress}`)
-      })
+        if (!config.strategies[s.vaultAddress])
+          throw new Error(`Invalid strategies override entry ${s.vaultAddress}`);
+      });
 
-      config.initialAllocationQueue = this.strategiesOverride.map(s => s.vaultAddress)
+      config.initialAllocationQueue = this.strategiesOverride.map(s => s.vaultAddress);
     }
 
-    return config
+    return config;
   }
 
   /**
@@ -176,10 +180,7 @@ class Allocator {
    * @param finalAllocation Record of final allocation details with old/new amounts and diffs
    * @returns True if reallocation shouldn't occur, false otherwise (boolean)
    */
-  private async verifyAllocation(
-    vault: EulerEarn,
-    finalAllocation: Record<string, AllocationDetails>,
-  ) {
+  private async verifyAllocation(vault: EulerEarn, finalAllocation: Allocation) {
     /** Check if all assets are allocated */
     if (checkAllocationTotals(vault, finalAllocation)) {
       throw new Error('Total assets / total allocated mismatch');
@@ -204,12 +205,17 @@ class Allocator {
   public async computeAllocation() {
     /** Get EulerEarn configuration and current allocations */
     const vault = await this.getEulerEarn();
-    console.log('Strategy balances: ', Object.entries(vault.strategies).map(([strategy, { allocation }]) => [strategy, allocation]));
+
+    const currentAllocation = getCurrentAllocation(vault);
+
+    const { totalReturns: currentReturns, details: currentReturnsDetails } = computeGreedyReturns({
+      vault,
+      allocation: currentAllocation,
+    }); // Can change returns computation
 
     /** Get allocatable amount and cash amount based on target cash reserve percentage */
     const [allocatableAmount, cashAmount] = this.getAllocatableAmount(vault);
-    console.log('Allocatable amount: ', allocatableAmount);
-    console.log('Cash amount (for idle vault): ', cashAmount);
+
     if (allocatableAmount + cashAmount === BigInt(0)) return;
 
     /** Compute initial allocation */
@@ -218,35 +224,41 @@ class Allocator {
       allocatableAmount,
       cashAmount,
     }); // Can change initial allocation strategies
-    console.log('Initial allocation: ', initialAllocation);
 
     /** Compute initial returns */
-    const initialReturns = computeGreedyReturns({
+    const { totalReturns: initialReturns } = computeGreedyReturns({
       vault,
       allocation: initialAllocation,
-      log: true,
     }); // Can change returns computation
-    console.log('Initial returns: ', initialReturns);
-    
+
     /** Compute final allocation and returns using simulated annealing */
     const [finalAllocation] = computeGreedySimAnnealing({
       vault,
       initialAllocation,
       initialReturns,
     }); // Can change optimization algo/params/etc
-    console.log('Final allocation: ', finalAllocation);
 
-    const finalReturns = computeGreedyReturns({
+    const { totalReturns: finalReturns, details: finalReturnsDetails } = computeGreedyReturns({
       vault,
       allocation: finalAllocation,
-      log: true,
     }); // Can change returns computation
-    console.log('Final returns: ', finalReturns);
 
     /** Check if reallocation shouldn't occur */
     const shouldStop = await this.verifyAllocation(vault, finalAllocation);
+
+    logRun(
+      currentAllocation,
+      currentReturns,
+      currentReturnsDetails,
+      finalAllocation,
+      finalReturns,
+      finalReturnsDetails,
+      allocatableAmount,
+      cashAmount,
+    );
+
     if (shouldStop) {
-      console.log("Aborting");
+      console.log('Aborting');
       return;
     }
 
@@ -257,6 +269,7 @@ class Allocator {
       earnVaultAddress: this.earnVaultAddress,
       evcAddress: this.evcAddress,
       rpcClient: this.rpcClient,
+      broadcast: this.broadcast,
     });
 
     /** Send notification */

@@ -1,5 +1,5 @@
 import ANNEALING_CONSTANTS from '@/constants/annealingConstants';
-import { EulerEarn, StrategyDetails, type AllocationDetails} from '@/types/types';
+import { Allocation, EulerEarn, StrategyDetails, type AllocationDetails } from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
 import { Address, zeroAddress } from 'viem';
@@ -17,14 +17,11 @@ function computeTransferAmount(
   temperature: number,
 ) {
   const srcCurrentAmount = srcVaultAllocation.newAmount;
-  const srcDetails = vault.strategies[srcVault].details
-  const destDetails = vault.strategies[destVault].details
+  const srcDetails = vault.strategies[srcVault].details;
+  const destDetails = vault.strategies[destVault].details;
   const srvVaultMaxWithdraw = srcDetails.cash + srcVaultAllocation.diff;
   const destSupplyCap =
-    destDetails.supplyCap -
-    destDetails.totalBorrows -
-    destDetails.cash -
-    destVaultAllocation.diff;
+    destDetails.supplyCap - destDetails.totalBorrows - destDetails.cash - destVaultAllocation.diff;
   const destStrategyCap = vault.strategies[destVault].cap - destVaultAllocation.diff;
 
   const maxTransfer = [
@@ -51,7 +48,7 @@ function computeTransferAmount(
  */
 export function generateNeighbor(
   vault: EulerEarn,
-  currentAllocation: Record<string, AllocationDetails>,
+  currentAllocation: Allocation,
   temperature: number,
 ) {
   const newAllocation = structuredClone(currentAllocation);
@@ -95,7 +92,7 @@ export function computeGreedySimAnnealing({
   initialReturns,
 }: {
   vault: EulerEarn;
-  initialAllocation: Record<string, AllocationDetails>;
+  initialAllocation: Allocation;
   initialReturns: number;
 }) {
   let currentAllocation = structuredClone(initialAllocation);
@@ -112,11 +109,7 @@ export function computeGreedySimAnnealing({
   ) {
     let acceptedMoves = 0;
     for (let i = 0; i < ANNEALING_CONSTANTS.ITERATIONS_PER_TEMP; i++) {
-      const newAllocation = generateNeighbor(
-        vault,
-        currentAllocation,
-        currentTemp,
-      );
+      const newAllocation = generateNeighbor(vault, currentAllocation, currentTemp);
       const newReturns = computeGreedyReturns({
         vault,
         allocation: newAllocation,

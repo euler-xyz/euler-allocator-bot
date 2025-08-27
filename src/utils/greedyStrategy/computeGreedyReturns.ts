@@ -1,4 +1,4 @@
-import { EulerEarn, protocolSchema, type AllocationDetails } from '@/types/types';
+import { Allocation, EulerEarn, protocolSchema, ReturnsDetails } from '@/types/types';
 import { parseBigIntToNumberWithScale } from '@/utils/common/parser';
 import {
   resolveEulerBorrowAPY,
@@ -6,6 +6,7 @@ import {
   resolveEulerSupplyAPY,
 } from '@/utils/euler/resolveEulerUnits';
 import { computeMerklRewardAPY } from '@/utils/rewards/merkl';
+import { Address } from 'viem';
 
 /**
  * @notice Computes the weighted average returns for an allocation across vaults
@@ -15,14 +16,13 @@ import { computeMerklRewardAPY } from '@/utils/rewards/merkl';
 export function computeGreedyReturns({
   vault,
   allocation,
-  log = false,
 }: {
   vault: EulerEarn;
-  allocation: Record<string, AllocationDetails>;
-  log?: boolean;
+  allocation: Allocation;
 }) {
   let returns = 0;
   let totalAllocation = 0;
+  let details: ReturnsDetails = {};
 
   Object.entries(allocation).forEach(([strategy, allocationInfo]) => {
     const newAmount = parseBigIntToNumberWithScale(allocationInfo.newAmount, vault.assetDecimals);
@@ -49,22 +49,14 @@ export function computeGreedyReturns({
         rewardCampaigns: strategyInfo.rewardCampaigns,
       });
       returns += newAmount * (postImpactAPY + postImpactRewardAPY);
-
-      if (log)
-        console.log(
-          'Returns',
-          strategyInfo.vault,
-          'Supply APY: ',
-          postImpactAPY,
-          'Rewards APY:',
-          postImpactRewardAPY,
-          'Total: ',
-          postImpactAPY + postImpactRewardAPY,
-        );
+      details[strategyInfo.vault] = {
+        interestAPY: postImpactAPY,
+        rewardsAPY: postImpactRewardAPY,
+      };
     } // Can add more protocols here
   });
 
-  const totalRewards = totalAllocation ? returns / totalAllocation : 0;
+  const totalReturns = totalAllocation ? returns / totalAllocation : 0;
 
-  return totalRewards;
+  return { totalReturns, details };
 }
