@@ -26,4 +26,3 @@ export async function getBalanceOf({
 
   return balance;
 }
-

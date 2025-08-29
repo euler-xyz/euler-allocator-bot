@@ -3,7 +3,8 @@ import rpcClient from '@/data/rpcClient';
 
 import ENV from '@/constants/constants';
 import Allocator from '@/modules/Allocator';
-import { sendTelegramMessage } from '@/utils/notifications/telegram';
+import { logger } from './utils/common/log';
+import { sendNotifications } from './utils/notifications/sendNotifications';
 
 const allocator = new Allocator({
   allocationDiffTolerance: ENV.ALLOCATION_DIFF_TOLERANCE,
@@ -24,15 +25,13 @@ const allocator = new Allocator({
 async function main() {
   try {
     await allocator.computeAllocation();
-    console.log(`Successful run at ${new Date().toISOString()}`);
     setTimeout(main, ENV.INTERVAL_TIME);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    console.log(error);
-    await sendTelegramMessage({ message: `Error\n${errorMessage}`, type: 'error' });
+    logger.error(error);
+    await sendNotifications({ message: `Error\n${errorMessage}`, type: 'error' });
   }
 }
 
-console.log(`ALLOCATOR STARTED AT: ${new Date().toISOString()}`);
 main();

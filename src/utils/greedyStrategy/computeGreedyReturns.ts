@@ -6,7 +6,6 @@ import {
   resolveEulerSupplyAPY,
 } from '@/utils/euler/resolveEulerUnits';
 import { computeMerklRewardAPY } from '@/utils/rewards/merkl';
-import { Address } from 'viem';
 
 /**
  * @notice Computes the weighted average returns for an allocation across vaults

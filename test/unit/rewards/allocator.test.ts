@@ -13,14 +13,10 @@ describe('Allocator', () => {
       allocatorPrivateKey: '0x0000000000000000000000000000000000000000000000000000000000000000',
       amountSnapshotTolerance: 0,
       apyTolerance: 0,
-      assetContractAddress: zeroAddress,
-      assetDecimals: 6,
       cashPercentage: BigInt(100000000000000000),
       chainId: 1,
       earnVaultAddress: zeroAddress,
       evcAddress: zeroAddress,
-      strategies: [],
-      prismaClient: {} as any,
       rpcClient: {} as any,
     });
 

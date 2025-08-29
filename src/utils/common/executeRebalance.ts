@@ -79,6 +79,6 @@ export async function executeRebalance({
 
     return receipt.transactionHash;
   } else {
-    console.log('Simulation only mode');
+    return "simulation"
   }
 }

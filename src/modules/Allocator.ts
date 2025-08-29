@@ -8,14 +8,14 @@ import {
 } from '@/utils/common/checkSnapshotDiff';
 import { executeRebalance } from '@/utils/common/executeRebalance';
 import { getCurrentAllocation } from '@/utils/common/getCurrentAllocation';
-import { logRun } from '@/utils/common/log';
+import { getRunLog, logger } from '@/utils/common/log';
 import { parseContractAddress } from '@/utils/common/parser';
 import { getEulerEarnInternalBalance } from '@/utils/euler/getEulerEarnInternalBalance';
 import { getEulerVaultDetails } from '@/utils/euler/getEulerVaultDetails';
 import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInitAlloc';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
 import { computeGreedySimAnnealing } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
-import { sendTelegramMessage } from '@/utils/notifications/telegram';
+import { notifyRun } from '@/utils/notifications/sendNotifications';
 import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
 
 /**
@@ -246,7 +246,7 @@ class Allocator {
     /** Check if reallocation shouldn't occur */
     const shouldStop = await this.verifyAllocation(vault, finalAllocation);
 
-    logRun(
+    const runLog = getRunLog(
       currentAllocation,
       currentReturns,
       currentReturnsDetails,
@@ -258,25 +258,26 @@ class Allocator {
     );
 
     if (shouldStop) {
-      console.log('Aborting');
+      runLog.result = "abort"
       return;
     }
 
     /** Execute rebalance */
-    const txHash = await executeRebalance({
-      allocation: finalAllocation,
-      allocatorPrivateKey: this.allocatorPrivateKey,
-      earnVaultAddress: this.earnVaultAddress,
-      evcAddress: this.evcAddress,
-      rpcClient: this.rpcClient,
-      broadcast: this.broadcast,
-    });
-
-    /** Send notification */
-    await sendTelegramMessage({
-      message: `Portfolio Rebalance\n https://basescan.org/tx/${txHash}`,
-      type: 'info',
-    });
+    try {
+      runLog.result = await executeRebalance({
+        allocation: finalAllocation,
+        allocatorPrivateKey: this.allocatorPrivateKey,
+        earnVaultAddress: this.earnVaultAddress,
+        evcAddress: this.evcAddress,
+        rpcClient: this.rpcClient,
+        broadcast: this.broadcast,
+      });
+    } catch (error) {
+      runLog.result = "error";
+      runLog.error = error;
+    }
+    logger.info(runLog)
+    await notifyRun(runLog)
   }
 }
 

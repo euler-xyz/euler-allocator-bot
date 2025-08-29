@@ -1,7 +1,7 @@
 import { VaultLensAbi } from '@/constants/VaultLensAbi';
 import { eulerAdaptiveIrmSchema, eulerIrmSchema, eulerNoIrmSchema } from '@/types/euler';
 import { AbiParametersToPrimitiveTypes, ExtractAbiFunction } from 'abitype';
-import { Address, getAddress } from 'viem';
+import { Address, getAddress, Hash } from 'viem';
 import { z } from 'zod';
 /**
  * @notice Schema for validating Ethereum addresses
@@ -119,3 +119,20 @@ export type ReturnsDetails = {
     rewardsAPY: number;
   };
 };
+
+export type RunLog = {
+  current: {
+    allocation: Allocation;
+    returnsTotal: number;
+    returnsStrategies: ReturnsDetails;
+  },
+  allocationAmount: bigint;
+  cashAmount: bigint;
+  new: {
+    allocation: Allocation;
+    returnsTotal: number;
+    returnsDetails: ReturnsDetails;
+  },
+  result?: "abort" | "simulation" | "error" | Hash;
+  error?: unknown;
+}

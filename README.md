@@ -28,6 +28,11 @@ pnpm run dev
 pnpm run build & pnpm start
 ```
 
+For pretty logs in development, set `NODE_ENV=dev`
+
+## Notifications
+The bot can send notifications through Telegram or Slack. See [src/constants/notificationConstants.ts](./src/constants/notificationConstants.ts)
+
 ## Code Style
 
 This project uses Prettier for code formatting. The configuration can be found in `.prettierrc`. To maintain consistent code style:

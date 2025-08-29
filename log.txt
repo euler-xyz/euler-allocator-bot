@@ -1,0 +1,1029 @@
+
+> ts-processor-app@1.0.0 dev /Users/dariusz/Euler/euler-allocator-bot
+> tsx src/index.ts
+
+ALLOCATOR STARTED AT: 2025-08-28T12:44:17.217Z
+1
+[14:44:18.197] INFO (16554):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500692,
+          "oldAmount": 500692
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 18956843899951,
+          "oldAmount": 18956843899951
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.523928687378912,
+          "rewardsAPY": 1.0063646110291777
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.456000345387848,
+          "rewardsAPY": 0.11553108218397695
+        }
+      },
+      "returnsTotal": 10.571531373658233
+    }
+    allocationAmount: 18956844400643
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500692,
+          "newAmount": 0,
+          "oldAmount": 500692
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500692,
+          "newAmount": 18956844400643,
+          "oldAmount": 18956843899951
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.5239300845594625,
+          "rewardsAPY": 1.006364633567511
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.456000211823177,
+          "rewardsAPY": 0.11553108188694118
+        }
+      },
+      "returnsTotal": 10.571531293710118
+    }
+    result: "simulation"
+ ELIFECYCLE  Command failed with exit code 130.
+
+> ts-processor-app@1.0.0 dev /Users/dariusz/Euler/euler-allocator-bot
+> tsx src/index.ts
+
+ALLOCATOR STARTED AT: 2025-08-28T14:57:42.920Z
+[16:57:44.083] INFO (26136):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500701,
+          "oldAmount": 500701
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 20055058430389,
+          "oldAmount": 20055058430389
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386861861819759,
+          "rewardsAPY": 0.9746803969740037
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.766029111539384,
+          "rewardsAPY": 0.1128052982292716
+        }
+      },
+      "returnsTotal": 10.878834346921137
+    }
+    allocationAmount: 20055058931090
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500701,
+          "newAmount": 0,
+          "oldAmount": 500701
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500701,
+          "newAmount": 20055058931090,
+          "oldAmount": 20055058430389
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386863251482809,
+          "rewardsAPY": 0.9746804187680105
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.766028965360784,
+          "rewardsAPY": 0.1128052979373464
+        }
+      },
+      "returnsTotal": 10.87883426329813
+    }
+    result: "simulation"
+
+> ts-processor-app@1.0.0 dev /Users/dariusz/Euler/euler-allocator-bot
+> tsx src/index.ts
+
+{"level":30,"time":1756393148568,"pid":26378,"hostname":"dariusz-MacBook-Pro","current":{"allocation":{"0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9":{"diff":0,"newAmount":500701,"oldAmount":500701},"0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE":{"diff":0,"newAmount":0,"oldAmount":0},"0xe0a80d35bB6618CBA260120b279d357978c42BCE":{"diff":0,"newAmount":20055063869424,"oldAmount":20055063869424}},"returnsStrategies":{"0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9":{"interestAPY":7.386862844214126,"rewardsAPY":0.9746802126037716},"0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE":{"interestAPY":0,"rewardsAPY":0},"0xe0a80d35bB6618CBA260120b279d357978c42BCE":{"interestAPY":10.768000001616254,"rewardsAPY":0.11280939742326215}},"returnsTotal":10.880809336142727},"allocationAmount":20055064370125,"cashAmount":0,"new":{"allocation":{"0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9":{"diff":-500701,"newAmount":0,"oldAmount":500701},"0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE":{"diff":0,"newAmount":0,"oldAmount":0},"0xe0a80d35bB6618CBA260120b279d357978c42BCE":{"diff":500701,"newAmount":20055064370125,"oldAmount":20055063869424}},"returnsDetails":{"0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9":{"interestAPY":7.386864220118868,"rewardsAPY":0.9746802343977703},"0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE":{"interestAPY":0,"rewardsAPY":0},"0xe0a80d35bB6618CBA260120b279d357978c42BCE":{"interestAPY":10.767999855425408,"rewardsAPY":0.11280939713131573}},"returnsTotal":10.880809252556723},"result":"simulation"}
+
+> ts-processor-app@1.0.0 dev /Users/dariusz/Euler/euler-allocator-bot
+> tsx src/index.ts
+
+[16:59:42.946] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500701,
+          "oldAmount": 500701
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 20055066200731,
+          "oldAmount": 20055066200731
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386863251481921,
+          "rewardsAPY": 0.974680133588004
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.768000459188956,
+          "rewardsAPY": 0.11280938430969813
+        }
+      },
+      "returnsTotal": 10.880809780601867
+    }
+    allocationAmount: 20055066701432
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500701,
+          "newAmount": 0,
+          "oldAmount": 500701
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500701,
+          "newAmount": 20055066701432,
+          "oldAmount": 20055066200731
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386864641145006,
+          "rewardsAPY": 0.9746801553819993
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.768000323754787,
+          "rewardsAPY": 0.11280938401775176
+        }
+      },
+      "returnsTotal": 10.880809707772539
+    }
+    result: "simulation"
+[18:02:13.440] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500705,
+          "oldAmount": 500705
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 19223240605294,
+          "oldAmount": 19223240605294
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386906487882604,
+          "rewardsAPY": 0.987728830952735
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 11.075043383549385,
+          "rewardsAPY": 0.11452311196274503
+        }
+      },
+      "returnsTotal": 11.189566422192021
+    }
+    allocationAmount: 19223241105999
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500705,
+          "newAmount": 0,
+          "oldAmount": 500705
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500705,
+          "newAmount": 19223241105999,
+          "oldAmount": 19223240605294
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386907863789559,
+          "rewardsAPY": 0.9877288530384912
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 11.075043246404643,
+          "rewardsAPY": 0.1145231116658362
+        }
+      },
+      "returnsTotal": 11.18956635807048
+    }
+    result: "simulation"
+[19:02:14.591] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500709,
+          "oldAmount": 500709
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 20022496056593,
+          "oldAmount": 20022496056593
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386948180546538,
+          "rewardsAPY": 0.9916920690376853
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.780004298000154,
+          "rewardsAPY": 0.1147993960043867
+        }
+      },
+      "returnsTotal": 10.894803631082032
+    }
+    allocationAmount: 20022496557302
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500709,
+          "newAmount": 0,
+          "oldAmount": 500709
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500709,
+          "newAmount": 20022496557302,
+          "oldAmount": 20022496056593
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.386949570214025,
+          "rewardsAPY": 0.9916920912120569
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.780004162495898,
+          "rewardsAPY": 0.11479939570723596
+        }
+      },
+      "returnsTotal": 10.894803558203133
+    }
+    result: "simulation"
+[21:02:44.820] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500717,
+          "oldAmount": 500717
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 20107418403777,
+          "oldAmount": 20107418403777
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.387166166839408,
+          "rewardsAPY": 0.9756490178751449
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.394008192760001,
+          "rewardsAPY": 0.11262446912748787
+        }
+      },
+      "returnsTotal": 10.506632608501928
+    }
+    allocationAmount: 20107418904494
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500717,
+          "newAmount": 0,
+          "oldAmount": 500717
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500717,
+          "newAmount": 20107418904494,
+          "oldAmount": 20107418403777
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.387167556518746,
+          "rewardsAPY": 0.9756490396908325
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.39400805942623,
+          "rewardsAPY": 0.11262446883678644
+        }
+      },
+      "returnsTotal": 10.506632528263017
+    }
+    result: "simulation"
+[22:26:50.682] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500723,
+          "oldAmount": 500723
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 20228536018278,
+          "oldAmount": 20228536018278
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.552328495550828,
+          "rewardsAPY": 0.9767304042496597
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.309133713998028,
+          "rewardsAPY": 0.1126063078564705
+        }
+      },
+      "returnsTotal": 10.421739975004398
+    }
+    allocationAmount: 20228536519001
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500723,
+          "newAmount": 0,
+          "oldAmount": 500723
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500723,
+          "newAmount": 20228536519001,
+          "oldAmount": 20228536018278
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.552329893964053,
+          "rewardsAPY": 0.9767304260895395
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.30913358115931,
+          "rewardsAPY": 0.11260630756618438
+        }
+      },
+      "returnsTotal": 10.421739888725494
+    }
+    result: "simulation"
+[00:12:59.261] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500730,
+          "oldAmount": 500730
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25293012796016,
+          "oldAmount": 25293012796016
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.618627741766182,
+          "rewardsAPY": 0.9384940900239145
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.313429531547193,
+          "rewardsAPY": 0.10545218363415755
+        }
+      },
+      "returnsTotal": 9.418881698120948
+    }
+    allocationAmount: 25293013296746
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500730,
+          "newAmount": 0,
+          "oldAmount": 500730
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500730,
+          "newAmount": 25293013296746,
+          "oldAmount": 25293012796016
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.618629143831627,
+          "rewardsAPY": 0.938494111027463
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.313429404743125,
+          "rewardsAPY": 0.10545218336897758
+        }
+      },
+      "returnsTotal": 9.418881588112104
+    }
+    result: "simulation"
+[01:50:37.848] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500737,
+          "oldAmount": 500737
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25611422691526,
+          "oldAmount": 25611422691526
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.3413084269180775,
+          "rewardsAPY": 0.9202386659413836
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.193421320367879,
+          "rewardsAPY": 0.1036020587050295
+        }
+      },
+      "returnsTotal": 9.297023358827985
+    }
+    allocationAmount: 25611423192263
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500737,
+          "newAmount": 0,
+          "oldAmount": 500737
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500737,
+          "newAmount": 25611423192263,
+          "oldAmount": 25611422691526
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 7.341309799842274,
+          "rewardsAPY": 0.9202386864448436
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.193421194275448,
+          "rewardsAPY": 0.10360205844515541
+        }
+      },
+      "returnsTotal": 9.297023252720603
+    }
+    result: "simulation"
+[04:41:35.865] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500747,
+          "oldAmount": 500747
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25613156698793,
+          "oldAmount": 25613156698793
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.6308293071717195,
+          "rewardsAPY": 0.8902399707306395
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.508850077133015,
+          "rewardsAPY": 0.1053754016168537
+        }
+      },
+      "returnsTotal": 9.614225418277485
+    }
+    allocationAmount: 25613157199540
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500747,
+          "newAmount": 0,
+          "oldAmount": 500747
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500747,
+          "newAmount": 25613157199540,
+          "oldAmount": 25613156698793
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.630829551223636,
+          "rewardsAPY": 0.8902399897133394
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.508849949178684,
+          "rewardsAPY": 0.10537540135089006
+        }
+      },
+      "returnsTotal": 9.614225350529574
+    }
+    result: "simulation"
+[06:45:46.071] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500754,
+          "oldAmount": 500754
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25849023504142,
+          "oldAmount": 25849023504142
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.63084879638679,
+          "rewardsAPY": 0.8969560291181902
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.595250606958004,
+          "rewardsAPY": 0.10643639771067819
+        }
+      },
+      "returnsTotal": 9.701686943183415
+    }
+    allocationAmount: 25849024004896
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500754,
+          "newAmount": 0,
+          "oldAmount": 500754
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500754,
+          "newAmount": 25849024004896,
+          "oldAmount": 25849023504142
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.630849040439464,
+          "rewardsAPY": 0.8969560482441182
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.595250478473478,
+          "rewardsAPY": 0.10643639744136318
+        }
+      },
+      "returnsTotal": 9.701686875914842
+    }
+    result: "simulation"
+[07:45:47.495] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500757,
+          "oldAmount": 500757
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25849293888075,
+          "oldAmount": 25849293888075
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.631745250957918,
+          "rewardsAPY": 0.8951192670495761
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.68271929851694,
+          "rewardsAPY": 0.10639379592933262
+        }
+      },
+      "returnsTotal": 9.789113031249427
+    }
+    allocationAmount: 25849294388832
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500757,
+          "newAmount": 0,
+          "oldAmount": 500757
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500757,
+          "newAmount": 25849294388832,
+          "oldAmount": 25849293888075
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.631745495049297,
+          "rewardsAPY": 0.8951192861378142
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.682719169514748,
+          "rewardsAPY": 0.10639379565966015
+        }
+      },
+      "returnsTotal": 9.789112965174407
+    }
+    result: "simulation"
+[09:00:49.220] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500761,
+          "oldAmount": 500761
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25849634910116,
+          "oldAmount": 25849634910116
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.654260031321478,
+          "rewardsAPY": 0.8968147884131012
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.08677409352486,
+          "rewardsAPY": 0.10625293859189693
+        }
+      },
+      "returnsTotal": 10.193026961564598
+    }
+    allocationAmount: 25849635410877
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500761,
+          "newAmount": 0,
+          "oldAmount": 500761
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500761,
+          "newAmount": 25849635410877,
+          "oldAmount": 25849634910116
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.6542602763888405,
+          "rewardsAPY": 0.8968148075750816
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 10.086773862970253,
+          "rewardsAPY": 0.10625293832291893
+        }
+      },
+      "returnsTotal": 10.193026801293172
+    }
+    result: "simulation"
+[10:12:26.735] INFO (26549):
+    current: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": 0,
+          "newAmount": 500764,
+          "oldAmount": 500764
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 0,
+          "newAmount": 25887272386476,
+          "oldAmount": 25887272386476
+        }
+      },
+      "returnsStrategies": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.671291896988352,
+          "rewardsAPY": 0.8798916263642358
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.970459991141947,
+          "rewardsAPY": 0.10405736243642419
+        }
+      },
+      "returnsTotal": 10.074517285422921
+    }
+    allocationAmount: 25887272887240
+    cashAmount: 0
+    new: {
+      "allocation": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "diff": -500764,
+          "newAmount": 0,
+          "oldAmount": 500764
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "diff": 0,
+          "newAmount": 0,
+          "oldAmount": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "diff": 500764,
+          "newAmount": 25887272887240,
+          "oldAmount": 25887272386476
+        }
+      },
+      "returnsDetails": {
+        "0x797DD80692c3b2dAdabCe8e30C07fDE5307D48a9": {
+          "interestAPY": 5.671292142791047,
+          "rewardsAPY": 0.8798916451919094
+        },
+        "0xB93d4928f39fBcd6C89a7DFbF0A867E6344561bE": {
+          "interestAPY": 0,
+          "rewardsAPY": 0
+        },
+        "0xe0a80d35bB6618CBA260120b279d357978c42BCE": {
+          "interestAPY": 9.970459761365102,
+          "rewardsAPY": 0.10405736217310414
+        }
+      },
+      "returnsTotal": 10.074517123538207
+    }
+    result: "simulation"
