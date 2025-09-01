@@ -218,24 +218,24 @@ class Allocator {
 
     if (allocatableAmount + cashAmount === BigInt(0)) return;
 
-    /** Compute initial allocation */
-    const initialAllocation = computeGreedyInitAlloc({
-      vault,
-      allocatableAmount,
-      cashAmount,
-    }); // Can change initial allocation strategies
+    // /** Compute initial allocation */
+    // const initialAllocation = computeGreedyInitAlloc({
+    //   vault,
+    //   allocatableAmount,
+    //   cashAmount,
+    // }); // Can change initial allocation strategies
 
-    /** Compute initial returns */
-    const { totalReturns: initialReturns } = computeGreedyReturns({
-      vault,
-      allocation: initialAllocation,
-    }); // Can change returns computation
+    // /** Compute initial returns */
+    // const { totalReturns: initialReturns } = computeGreedyReturns({
+    //   vault,
+    //   allocation: initialAllocation,
+    // }); // Can change returns computation
 
     /** Compute final allocation and returns using simulated annealing */
     const [finalAllocation] = computeGreedySimAnnealing({
       vault,
-      initialAllocation,
-      initialReturns,
+      initialAllocation: currentAllocation,
+      initialReturns: currentReturns,
     }); // Can change optimization algo/params/etc
 
     const { totalReturns: finalReturns, details: finalReturnsDetails } = computeGreedyReturns({

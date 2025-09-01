@@ -110,7 +110,7 @@ export function computeGreedySimAnnealing({
     let acceptedMoves = 0;
     for (let i = 0; i < ANNEALING_CONSTANTS.ITERATIONS_PER_TEMP; i++) {
       const newAllocation = generateNeighbor(vault, currentAllocation, currentTemp);
-      const newReturns = computeGreedyReturns({
+      const { totalReturns: newReturns } = computeGreedyReturns({
         vault,
         allocation: newAllocation,
       });
