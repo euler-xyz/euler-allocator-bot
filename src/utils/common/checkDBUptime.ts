@@ -24,7 +24,7 @@ export async function checkDBUptime({
     },
   });
 
-  const statusJson = status.value as Prisma.JsonObject | null;
+  const statusJson = status.value ?? null;
   if (!statusJson) {
     throw new Error('Status json is not defined');
   }

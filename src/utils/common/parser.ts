@@ -8,12 +8,13 @@ import { formatUnits, getAddress, parseUnits, type Address, type Hex } from 'vie
  * @returns The validated environment variable value
  * @throws Error if the environment variable is undefined
  */
-export function parseEnvVar(varValue: string | undefined) {
+export function parseEnvVar(varValue?: string, name?: string): string {
   if (!varValue) {
-    throw new Error('Missing environment variable');
+    throw new Error(`❌ Missing environment variable: ${name}`);
   }
   return varValue;
 }
+
 
 /**
  * @notice Converts a Prisma Decimal value to a JavaScript BigInt

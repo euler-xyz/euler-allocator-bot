@@ -1,0 +1,49 @@
+name: Euler Allocator Bot
+
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 * * * *" # ogni ora
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Run bot
+        env:
+          ALLOCATION_DIFF_TOLERANCE: ${{ secrets.ALLOCATION_DIFF_TOLERANCE }}
+          ALLOCATOR_PRIVATE_KEY: ${{ secrets.ALLOCATOR_PRIVATE_KEY }}
+          AMOUNT_SNAPSHOT_TOLERANCE: ${{ secrets.AMOUNT_SNAPSHOT_TOLERANCE }}
+          APY_TOLERANCE: ${{ secrets.APY_TOLERANCE }}
+          CASH_PERCENTAGE: ${{ secrets.CASH_PERCENTAGE }}
+          CHAIN_ID: ${{ secrets.CHAIN_ID }}
+          EARN_VAULT_ADDRESS: ${{ secrets.EARN_VAULT_ADDRESS }}
+          EVC_ADDRESS: ${{ secrets.EVC_ADDRESS }}
+          INTERVAL_TIME: ${{ secrets.INTERVAL_TIME }}
+          BROADCAST: ${{ secrets.BROADCAST }}
+          RPC_URL: ${{ secrets.RPC_URL }}
+          STRATEGIES_OVERRIDE: ${{ secrets.STRATEGIES_OVERRIDE }}
+          VAULT_LENS_ADDRESS: ${{ secrets.VAULT_LENS_ADDRESS }}
+          EULER_EARN_VAULT_LENS_ADDRESS: ${{ secrets.EULER_EARN_VAULT_LENS_ADDRESS }}
+        run: pnpm start
