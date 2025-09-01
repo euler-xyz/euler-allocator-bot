@@ -58,37 +58,6 @@ export function checkStrategyAmountsDiff({
   return false;
 }
 
-/**
- * @notice Checks if allocation changes are bigger than the tolerance threshold
- * @param assetDecimals The decimal precision of the asset
- * @param allocation Mapping of vault addresses to allocation details
- * @param tolerance Maximum allowed relative difference in amounts
- * @returns True if all allocation changes are less than the tolerance, false otherwise
- */
-export function checkAllocationDiff({
-  assetDecimals,
-  allocation,
-  tolerance,
-}: {
-  assetDecimals: number;
-  allocation: Allocation;
-  tolerance: number;
-}) {
-  for (const vaultAddress in allocation) {
-    const oldAmount = parseBigIntToNumberWithScale(
-      allocation[vaultAddress].oldAmount,
-      assetDecimals,
-    );
-    const newAmount = parseBigIntToNumberWithScale(
-      allocation[vaultAddress].newAmount,
-      assetDecimals,
-    );
-    const currentDiff = Math.abs(newAmount - oldAmount) / oldAmount;
-    if (currentDiff > tolerance) return false;
-  }
-  return true;
-}
-
 export function checkAllocationTotals(vault: EulerEarn, allocations: Allocation) {
   const totalAssets = Object.values(vault.strategies).reduce(
     (accu, { allocation }) => accu + allocation,

@@ -1,5 +1,12 @@
 import ANNEALING_CONSTANTS from '@/constants/annealingConstants';
-import { Allocation, EulerEarn, StrategyDetails, type AllocationDetails } from '@/types/types';
+import ENV from '@/constants/constants';
+import {
+  Allocation,
+  EulerEarn,
+  ReturnsDetails,
+  StrategyDetails,
+  type AllocationDetails,
+} from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
 import { Address, zeroAddress } from 'viem';
@@ -89,17 +96,21 @@ export function generateNeighbor(
 export function computeGreedySimAnnealing({
   vault,
   initialAllocation,
-  initialReturns,
 }: {
   vault: EulerEarn;
   initialAllocation: Allocation;
-  initialReturns: number;
 }) {
   let currentAllocation = structuredClone(initialAllocation);
   let bestAllocation = structuredClone(initialAllocation);
 
+  const { totalReturns: initialReturns, details: initialReturnsDetails } = computeGreedyReturns({
+    vault,
+    allocation: initialAllocation,
+  });
+
   let currentReturns = initialReturns;
   let bestReturns = initialReturns;
+  let bestReturnsDetails = initialReturnsDetails;
 
   let currentTemp = ANNEALING_CONSTANTS.INITIAL_TEMP;
   let consecutiveFailures = 0;
@@ -110,7 +121,7 @@ export function computeGreedySimAnnealing({
     let acceptedMoves = 0;
     for (let i = 0; i < ANNEALING_CONSTANTS.ITERATIONS_PER_TEMP; i++) {
       const newAllocation = generateNeighbor(vault, currentAllocation, currentTemp);
-      const { totalReturns: newReturns } = computeGreedyReturns({
+      const { totalReturns: newReturns, details: newReturnsDetails } = computeGreedyReturns({
         vault,
         allocation: newAllocation,
       });
@@ -122,9 +133,18 @@ export function computeGreedySimAnnealing({
         acceptedMoves++;
         consecutiveFailures = 0;
 
-        if (newReturns > bestReturns) {
+        if (
+          isBetterAllocation(
+            bestReturns,
+            bestReturnsDetails,
+            newReturns,
+            newReturnsDetails,
+            initialReturnsDetails,
+          )
+        ) {
           bestAllocation = structuredClone(newAllocation);
           bestReturns = newReturns;
+          bestReturnsDetails = newReturnsDetails;
         }
       } else {
         consecutiveFailures++;
@@ -143,3 +163,45 @@ export function computeGreedySimAnnealing({
 
   return [bestAllocation, bestReturns] as const;
 }
+
+const isBetterAllocation = (
+  oldReturns: number,
+  oldReturnsDetails: ReturnsDetails,
+  newReturns: number,
+  newReturnsDetails: ReturnsDetails,
+  initialReturnsDetails: ReturnsDetails,
+) => {
+  const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
+    const low = Object.values(returnsDetails).reduce((accu, val) => {
+      const apy = val.interestAPY + val.rewardsAPY;
+      return apy > 0 && apy < accu ? apy : accu; // TODO find idle vault
+    }, Infinity);
+    const high = Object.values(returnsDetails).reduce((accu, val) => {
+      const apy = val.interestAPY + val.rewardsAPY;
+      return apy > 0 && apy > accu ? apy : accu; // TODO find idle vault
+    }, 0);
+
+    if (low > high) throw new Error('High/low apy');
+
+    return high - low;
+  };
+  if (newReturns > oldReturns) {
+    if (ENV.MAX_STRATEGY_APY_DIFF) {
+      const initialMaxDiff = getMaxAPYDiff(initialReturnsDetails);
+      const newMaxDiff = getMaxAPYDiff(newReturnsDetails);
+
+      const maxAllowedDiff = ENV.MAX_STRATEGY_APY_DIFF;
+
+      if (initialMaxDiff > maxAllowedDiff) {
+        // the initial diff was out of range, new one improves it, allow
+        if (newMaxDiff < initialMaxDiff) return true;
+      } else {
+        // initial diff was in range, check the new one is as well
+        if (newMaxDiff > maxAllowedDiff) return false;
+      }
+    }
+
+    return true;
+  }
+  return false;
+};

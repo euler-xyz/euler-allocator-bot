@@ -125,14 +125,14 @@ export type RunLog = {
     allocation: Allocation;
     returnsTotal: number;
     returnsStrategies: ReturnsDetails;
-  },
+  };
   allocationAmount: bigint;
   cashAmount: bigint;
   new: {
     allocation: Allocation;
     returnsTotal: number;
     returnsDetails: ReturnsDetails;
-  },
-  result?: "abort" | "simulation" | "error" | Hash;
+  };
+  result?: 'abort' | 'simulation' | 'error' | Hash;
   error?: unknown;
-}
+};

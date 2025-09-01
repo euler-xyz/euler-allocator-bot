@@ -7,7 +7,7 @@ export async function sendTelegramMessage({
   message: string;
   type: 'info' | 'error';
 }) {
-  if (!NOTIFICATION_CONSTANTS.TELEGRAM_BOT_TOKEN) return
+  if (!NOTIFICATION_CONSTANTS.TELEGRAM_BOT_TOKEN) return;
   const text = type === 'error' ? `🚨 ${message}` : message;
 
   const response = await fetch(
@@ -25,7 +25,7 @@ export async function sendTelegramMessage({
   );
 
   if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText}`)
+    throw new Error(`${response.status} ${response.statusText}`);
   }
 
   return response.json();

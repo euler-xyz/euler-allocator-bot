@@ -14,16 +14,18 @@ dotenv.config();
  * and remain constant afterwards due to Node.js module caching
  */
 const ENV = {
-  /** @notice Minimum required difference between current and new allocations for reallocation to happen (percentage, e.g., 0.01) */
+  /** @notice Minimum required difference between current and new allocations for reallocation to happen (percentage, e.g. "3" means 3%) */
   ALLOCATION_DIFF_TOLERANCE: Number(parseEnvVar(process.env.ALLOCATION_DIFF_TOLERANCE)),
   /** @notice Private key of the allocator */
   ALLOCATOR_PRIVATE_KEY: parsePrivateKey(parseEnvVar(process.env.ALLOCATOR_PRIVATE_KEY)),
-  /** @notice Maximum allowed earn vault balances difference between snapshots (percentage, e.g., 0.01) */
+  /** @notice Maximum allowed earn vault balances difference between snapshots (fraction, e.g., 0.01) */
   AMOUNT_SNAPSHOT_TOLERANCE: Number(parseEnvVar(process.env.AMOUNT_SNAPSHOT_TOLERANCE)),
   /** @notice Maximum allowed APY difference between snapshots (absolute value, e.g., 1.5 (150 basis points)) */
   APY_TOLERANCE: Number(parseEnvVar(process.env.APY_TOLERANCE)),
   /** @notice Percentage of total assets to keep as cash reserve in idle (non-borrowable) vault (18 decimal fixed point) */
   CASH_PERCENTAGE: BigInt(parseEnvVar(process.env.CASH_PERCENTAGE)),
+  /** @notice Max difference in APY between strategies, (percentage, e.g. "3" means 3%) */
+  MAX_STRATEGY_APY_DIFF: Number(parseEnvVar(process.env.MAX_STRATEGY_APY_DIFF)),
   /** @notice ID of the blockchain network */
   CHAIN_ID: Number(parseEnvVar(process.env.CHAIN_ID)),
   /** @notice Address of the earn vault */

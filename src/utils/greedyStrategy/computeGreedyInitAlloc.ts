@@ -25,10 +25,10 @@ function loopGreedy(vault: EulerEarn, allocatableAmount: bigint) {
     let actualDiff = BigInt(0);
     if (diff > 0) {
       let availableToDeposit =
-      strategy.details.supplyCap - strategy.details.cash - strategy.details.totalBorrows;
+        strategy.details.supplyCap - strategy.details.cash - strategy.details.totalBorrows;
       availableToDeposit =
-      availableToDeposit <= strategyCapAvailable ? availableToDeposit : strategyCapAvailable;
-      
+        availableToDeposit <= strategyCapAvailable ? availableToDeposit : strategyCapAvailable;
+
       actualDiff = diff > availableToDeposit ? availableToDeposit : diff;
     } else if (diff < 0) {
       console.log('diff: ', diff);
