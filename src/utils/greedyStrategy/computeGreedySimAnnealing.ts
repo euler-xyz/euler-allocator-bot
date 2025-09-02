@@ -193,8 +193,8 @@ const isBetterAllocation = (
       const maxAllowedDiff = ENV.MAX_STRATEGY_APY_DIFF;
 
       if (initialMaxDiff > maxAllowedDiff) {
-        // the initial diff was out of range, new one improves it, allow
-        if (newMaxDiff < initialMaxDiff) return true;
+        // the initial diff was out of range, if new one improves it, allow
+        return newMaxDiff < initialMaxDiff;
       } else {
         // initial diff was in range, check the new one is as well
         if (newMaxDiff > maxAllowedDiff) return false;
