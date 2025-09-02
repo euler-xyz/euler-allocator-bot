@@ -1,7 +1,6 @@
 import { EulerEarnVaultLensAbi } from '@/constants/EulerEarnVaultLensAbi';
 import { Allocation, EulerEarn, protocolSchema, type StrategyConstants } from '@/types/types';
 import {
-  checkAllocationDiff,
   checkAllocationTotals,
   checkStrategyAmountsDiff,
   checkVaultDetailsDiff,
@@ -177,26 +176,20 @@ class Allocator {
 
   /**
    * @notice Checks if reallocation should occur
-   * @param finalAllocation Record of final allocation details with old/new amounts and diffs
    * @returns True if reallocation shouldn't occur, false otherwise (boolean)
    */
-  private async verifyAllocation(vault: EulerEarn, finalAllocation: Allocation) {
+  private async verifyAllocation(
+    vault: EulerEarn,
+    finalAllocation: Allocation,
+    currentReturns: number,
+    newReturns: number,
+  ) {
     /** Check if all assets are allocated */
     if (checkAllocationTotals(vault, finalAllocation)) {
       throw new Error('Total assets / total allocated mismatch');
     }
 
-    /** Check if allocation changes are significant */
-    if (
-      checkAllocationDiff({
-        assetDecimals: vault.assetDecimals,
-        allocation: finalAllocation,
-        tolerance: this.allocationDiffTolerance,
-      })
-    )
-      return true;
-
-    return false;
+    return newReturns - currentReturns >= this.allocationDiffTolerance;
   }
 
   /**
@@ -218,24 +211,10 @@ class Allocator {
 
     if (allocatableAmount + cashAmount === BigInt(0)) return;
 
-    // /** Compute initial allocation */
-    // const initialAllocation = computeGreedyInitAlloc({
-    //   vault,
-    //   allocatableAmount,
-    //   cashAmount,
-    // }); // Can change initial allocation strategies
-
-    // /** Compute initial returns */
-    // const { totalReturns: initialReturns } = computeGreedyReturns({
-    //   vault,
-    //   allocation: initialAllocation,
-    // }); // Can change returns computation
-
     /** Compute final allocation and returns using simulated annealing */
     const [finalAllocation] = computeGreedySimAnnealing({
       vault,
       initialAllocation: currentAllocation,
-      initialReturns: currentReturns,
     }); // Can change optimization algo/params/etc
 
     const { totalReturns: finalReturns, details: finalReturnsDetails } = computeGreedyReturns({
@@ -244,7 +223,12 @@ class Allocator {
     }); // Can change returns computation
 
     /** Check if reallocation shouldn't occur */
-    const shouldStop = await this.verifyAllocation(vault, finalAllocation);
+    const allocationVerified = await this.verifyAllocation(
+      vault,
+      finalAllocation,
+      currentReturns,
+      finalReturns,
+    );
 
     const runLog = getRunLog(
       currentAllocation,
@@ -257,27 +241,27 @@ class Allocator {
       cashAmount,
     );
 
-    if (shouldStop) {
-      runLog.result = "abort"
-      return;
+    if (!allocationVerified) {
+      runLog.result = 'abort';
+    } else {
+      /** Execute rebalance */
+      try {
+        runLog.result = await executeRebalance({
+          allocation: finalAllocation,
+          allocatorPrivateKey: this.allocatorPrivateKey,
+          earnVaultAddress: this.earnVaultAddress,
+          evcAddress: this.evcAddress,
+          rpcClient: this.rpcClient,
+          broadcast: this.broadcast,
+        });
+      } catch (error) {
+        runLog.result = 'error';
+        runLog.error = error;
+      }
     }
 
-    /** Execute rebalance */
-    try {
-      runLog.result = await executeRebalance({
-        allocation: finalAllocation,
-        allocatorPrivateKey: this.allocatorPrivateKey,
-        earnVaultAddress: this.earnVaultAddress,
-        evcAddress: this.evcAddress,
-        rpcClient: this.rpcClient,
-        broadcast: this.broadcast,
-      });
-    } catch (error) {
-      runLog.result = "error";
-      runLog.error = error;
-    }
-    logger.info(runLog)
-    await notifyRun(runLog)
+    logger.info(runLog);
+    await notifyRun(runLog);
   }
 }
 

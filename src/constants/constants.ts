@@ -24,6 +24,8 @@ const ENV = {
   APY_TOLERANCE: Number(parseEnvVar(process.env.APY_TOLERANCE, 'APY_TOLERANCE')),
   /** @notice Percentage of total assets to keep as cash reserve in idle (non-borrowable) vault (18 decimal fixed point) */
   CASH_PERCENTAGE: BigInt(parseEnvVar(process.env.CASH_PERCENTAGE, 'CASH_PERCENTAGE')),
+  /** @notice Max difference in APY between strategies, (percentage, e.g. "3" means 3%) */
+  MAX_STRATEGY_APY_DIFF: Number(parseEnvVar(process.env.MAX_STRATEGY_APY_DIFF, 'MAX_STRATEGY_APY_DIFF')),
   /** @notice ID of the blockchain network */
   CHAIN_ID: Number(parseEnvVar(process.env.CHAIN_ID, 'CHAIN_ID')),
   /** @notice Address of the earn vault */
@@ -46,6 +48,8 @@ const ENV = {
   EULER_EARN_VAULT_LENS_ADDRESS: parseContractAddress(
     parseEnvVar(process.env.EULER_EARN_VAULT_LENS_ADDRESS, 'EULER_EARN_VAULT_LENS_ADDRESS'),
   ),
+  /** @notice Optional. Max gas cost to spend on execution (gas * gasPrice) */
+  MAX_GAS_COST: BigInt(process.env.MAX_GAS_COST || 0),
 };
 
 export default ENV;

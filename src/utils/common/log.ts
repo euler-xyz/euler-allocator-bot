@@ -1,11 +1,15 @@
-import pino from "pino"
 import { Allocation, ReturnsDetails, RunLog } from '@/types/types';
+import pino from 'pino';
 
-export const logger = pino(process.env.NODE_ENV === "dev" ? {
-  transport: {
-    target: 'pino-pretty',
-  },
-}: undefined)
+export const logger = pino(
+  process.env.NODE_ENV === 'dev'
+    ? {
+        transport: {
+          target: 'pino-pretty',
+        },
+      }
+    : undefined,
+);
 
 export function getRunLog(
   currentAllocation: Allocation,
@@ -29,6 +33,6 @@ export function getRunLog(
       allocation: finalAllocation,
       returnsTotal: finalReturns,
       returnsDetails: finalReturnsDetails,
-    }
+    },
   };
 }

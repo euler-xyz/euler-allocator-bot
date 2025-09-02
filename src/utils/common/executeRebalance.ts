@@ -11,6 +11,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { calculateEulerEarnAllocations } from './calculateEulerEarnAllocations';
+import ENV from '@/constants/constants';
 
 /**
  * @notice Executes a rebalance operation by adjusting allocation points and calling rebalance
@@ -65,13 +66,26 @@ export async function executeRebalance({
     }),
   });
 
-  const { request } = await rpcClient.simulateContract({
+  const tx = {
     account,
     address: evcAddress,
     abi: EvcAbi,
     functionName: 'batch',
     args: [batchItems],
-  });
+  } as const
+  const { request } = await rpcClient.simulateContract(tx);
+
+  if (ENV.MAX_GAS_COST) {
+    try {
+      const gas = await rpcClient.estimateGas(tx);
+      const gasPrice = await rpcClient.getGasPrice();
+
+      if (gas * gasPrice > ENV.MAX_GAS_COST) {
+        return "abort"
+      }
+    } catch {} // some rpc providers don't support estimateGas method
+  }
+
 
   if (broadcast) {
     const hash = await walletClient.writeContract(request);
@@ -79,6 +93,6 @@ export async function executeRebalance({
 
     return receipt.transactionHash;
   } else {
-    return "simulation"
+    return 'simulation';
   }
 }
