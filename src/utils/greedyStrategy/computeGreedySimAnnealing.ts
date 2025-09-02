@@ -9,7 +9,7 @@ import {
 } from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
-import { Address, zeroAddress } from 'viem';
+import { Address, isAddressEqual, zeroAddress } from 'viem';
 
 /**
  * @notice Computes amount to transfer between vaults during annealing
@@ -48,9 +48,6 @@ function computeTransferAmount(
 
 /**
  * @notice Generates a neighboring solution by transferring funds between two random vaults
- * @param currentAllocation Current allocation state
- * @param vaultDetails Details of all vaults
- * @param temperature Current annealing temperature
  * @returns New allocation state after transfer
  */
 export function generateNeighbor(
@@ -87,10 +84,6 @@ export function generateNeighbor(
 
 /**
  * @notice Main simulated annealing optimization function
- * @param assetDecimals The decimal precision of the asset
- * @param vaultDetails Details of all vaults including constraints and APYs
- * @param initialAllocation Starting allocation state
- * @param initialReturns Returns from initial allocation
  * @returns Tuple of [best allocation found, best returns achieved]
  */
 export function computeGreedySimAnnealing({
@@ -135,6 +128,7 @@ export function computeGreedySimAnnealing({
 
         if (
           isBetterAllocation(
+            vault,
             bestReturns,
             bestReturnsDetails,
             newReturns,
@@ -165,6 +159,7 @@ export function computeGreedySimAnnealing({
 }
 
 const isBetterAllocation = (
+  vault: EulerEarn,
   oldReturns: number,
   oldReturnsDetails: ReturnsDetails,
   newReturns: number,
@@ -172,13 +167,13 @@ const isBetterAllocation = (
   initialReturnsDetails: ReturnsDetails,
 ) => {
   const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
-    const low = Object.values(returnsDetails).reduce((accu, val) => {
+    const low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return apy > 0 && apy < accu ? apy : accu; // TODO find idle vault
+      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy < accu ? apy : accu;
     }, Infinity);
-    const high = Object.values(returnsDetails).reduce((accu, val) => {
+    const high = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return apy > 0 && apy > accu ? apy : accu; // TODO find idle vault
+      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy > accu ? apy : accu;
     }, 0);
 
     if (low > high) throw new Error('High/low apy');
