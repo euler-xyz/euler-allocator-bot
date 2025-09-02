@@ -48,6 +48,8 @@ const ENV = {
   EULER_EARN_VAULT_LENS_ADDRESS: parseContractAddress(
     parseEnvVar(process.env.EULER_EARN_VAULT_LENS_ADDRESS),
   ),
+  /** @notice Optional. Max gas cost to spend on execution (gas * gasPrice) */
+  MAX_GAS_COST: BigInt(process.env.MAX_GAS_COST || 0),
 };
 
 export default ENV;
