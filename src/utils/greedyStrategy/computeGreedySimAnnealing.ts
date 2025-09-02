@@ -189,15 +189,16 @@ const isBetterAllocation = (
     if (ENV.MAX_STRATEGY_APY_DIFF) {
       const initialMaxDiff = getMaxAPYDiff(initialReturnsDetails);
       const newMaxDiff = getMaxAPYDiff(newReturnsDetails);
+      const oldMaxDiff = getMaxAPYDiff(oldReturnsDetails);
 
       const maxAllowedDiff = ENV.MAX_STRATEGY_APY_DIFF;
 
       if (initialMaxDiff > maxAllowedDiff) {
-        // the initial diff was out of range, if new one improves it, allow
-        return newMaxDiff < initialMaxDiff;
+        // prioritize reducing the diff if over the threshold
+        return (newMaxDiff < maxAllowedDiff) || (newMaxDiff < initialMaxDiff && newMaxDiff < oldMaxDiff);
       } else {
         // initial diff was in range, check the new one is as well
-        if (newMaxDiff > maxAllowedDiff) return false;
+        return newMaxDiff < maxAllowedDiff;
       }
     }
 
