@@ -15,7 +15,6 @@ export function parseEnvVar(varValue?: string, name?: string): string {
   return varValue;
 }
 
-
 /**
  * @notice Converts a Prisma Decimal value to a JavaScript BigInt
  * @param decimalValue - The decimal value to convert
