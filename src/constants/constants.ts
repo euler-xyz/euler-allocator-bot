@@ -14,11 +14,11 @@ dotenv.config();
  * and remain constant afterwards due to Node.js module caching
  */
 const ENV = {
-  /** @notice Minimum required difference between current and new allocations for reallocation to happen (percentage, e.g., 0.01) */
+  /** @notice Minimum required difference between current and new allocations for reallocation to happen (percentage, e.g. "3" means 3%) */
   ALLOCATION_DIFF_TOLERANCE: Number(parseEnvVar(process.env.ALLOCATION_DIFF_TOLERANCE, 'ALLOCATION_DIFF_TOLERANCE')),
   /** @notice Private key of the allocator */
   ALLOCATOR_PRIVATE_KEY: parsePrivateKey(parseEnvVar(process.env.ALLOCATOR_PRIVATE_KEY, 'ALLOCATOR_PRIVATE_KEY')),
-  /** @notice Maximum allowed earn vault balances difference between snapshots (percentage, e.g., 0.01) */
+  /** @notice Maximum allowed earn vault balances difference between snapshots (fraction, e.g., 0.01) */
   AMOUNT_SNAPSHOT_TOLERANCE: Number(parseEnvVar(process.env.AMOUNT_SNAPSHOT_TOLERANCE, 'AMOUNT_SNAPSHOT_TOLERANCE')),
   /** @notice Maximum allowed APY difference between snapshots (absolute value, e.g., 1.5 (150 basis points)) */
   APY_TOLERANCE: Number(parseEnvVar(process.env.APY_TOLERANCE, 'APY_TOLERANCE')),

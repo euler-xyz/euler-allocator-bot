@@ -19,6 +19,10 @@ pnpm install
 cp .env.example .env
 # Edit .env with your configuration
 ```
+or
+```bash
+pnpm run doppler:syncprod
+```
 See [constants](./src/constants/constants.ts) for details.
 
 3. Run
