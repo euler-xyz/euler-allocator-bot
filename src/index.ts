@@ -9,8 +9,6 @@ import { sendNotifications } from './utils/notifications/sendNotifications';
 const allocator = new Allocator({
   allocationDiffTolerance: ENV.ALLOCATION_DIFF_TOLERANCE,
   allocatorPrivateKey: ENV.ALLOCATOR_PRIVATE_KEY,
-  amountSnapshotTolerance: ENV.AMOUNT_SNAPSHOT_TOLERANCE,
-  apyTolerance: ENV.APY_TOLERANCE,
   cashPercentage: ENV.CASH_PERCENTAGE,
   chainId: ENV.CHAIN_ID,
   earnVaultAddress: ENV.EARN_VAULT_ADDRESS,

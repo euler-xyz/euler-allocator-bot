@@ -24,8 +24,6 @@ import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
 class Allocator {
   private allocationDiffTolerance: number;
   private allocatorPrivateKey: Hex;
-  private apyTolerance: number;
-  private amountSnapshotTolerance: number;
   private cashPercentage: bigint;
   private chainId: number;
   private earnVaultAddress: Address;
@@ -42,8 +40,6 @@ class Allocator {
   constructor({
     allocationDiffTolerance,
     allocatorPrivateKey,
-    amountSnapshotTolerance,
-    apyTolerance,
     cashPercentage,
     chainId,
     earnVaultAddress,
@@ -56,8 +52,6 @@ class Allocator {
   }: {
     allocationDiffTolerance: number;
     allocatorPrivateKey: Hex;
-    amountSnapshotTolerance: number;
-    apyTolerance: number;
     cashPercentage: bigint;
     chainId: number;
     earnVaultAddress: Address;
@@ -70,8 +64,6 @@ class Allocator {
   }) {
     this.allocationDiffTolerance = allocationDiffTolerance;
     this.allocatorPrivateKey = allocatorPrivateKey;
-    this.amountSnapshotTolerance = amountSnapshotTolerance;
-    this.apyTolerance = apyTolerance;
     this.cashPercentage = cashPercentage;
     this.chainId = chainId;
     this.earnVaultAddress = earnVaultAddress;

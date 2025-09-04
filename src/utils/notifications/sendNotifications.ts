@@ -6,7 +6,6 @@ import { sendTelegramMessage } from './telegram';
 
 export async function notifyRun(runLog: RunLog) {
   if (runLog.result?.startsWith('0x')) {
-    console.log('SENDING');
     const message = `Rebalance executed, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, APY ${runLog.current.returnsTotal} => ${runLog.new.returnsTotal} tx ${runLog.result}`;
     return sendNotifications({ message, type: 'info' });
   }

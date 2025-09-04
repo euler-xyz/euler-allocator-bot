@@ -18,10 +18,6 @@ const ENV = {
   ALLOCATION_DIFF_TOLERANCE: Number(parseEnvVar(process.env.ALLOCATION_DIFF_TOLERANCE, 'ALLOCATION_DIFF_TOLERANCE')),
   /** @notice Private key of the allocator */
   ALLOCATOR_PRIVATE_KEY: parsePrivateKey(parseEnvVar(process.env.ALLOCATOR_PRIVATE_KEY, 'ALLOCATOR_PRIVATE_KEY')),
-  /** @notice Maximum allowed earn vault balances difference between snapshots (fraction, e.g., 0.01) */
-  AMOUNT_SNAPSHOT_TOLERANCE: Number(parseEnvVar(process.env.AMOUNT_SNAPSHOT_TOLERANCE, 'AMOUNT_SNAPSHOT_TOLERANCE')),
-  /** @notice Maximum allowed APY difference between snapshots (absolute value, e.g., 1.5 (150 basis points)) */
-  APY_TOLERANCE: Number(parseEnvVar(process.env.APY_TOLERANCE, 'APY_TOLERANCE')),
   /** @notice Percentage of total assets to keep as cash reserve in idle (non-borrowable) vault (18 decimal fixed point) */
   CASH_PERCENTAGE: BigInt(parseEnvVar(process.env.CASH_PERCENTAGE, 'CASH_PERCENTAGE')),
   /** @notice Max difference in APY between strategies, (percentage, e.g. "3" means 3%) */
