@@ -9,7 +9,7 @@ export async function sendSlackMessage({
 }) {
   if (!NOTIFICATION_CONSTANTS.SLACK_WEBHOOK) return;
 
-  const text = type === 'error' ? `🚨 ${message}` : message;
+  const text = type === 'error' ? `❌ ${message}` : message;
 
   const response = await fetch(NOTIFICATION_CONSTANTS.SLACK_WEBHOOK, {
     method: 'POST',
