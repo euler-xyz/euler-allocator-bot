@@ -201,7 +201,10 @@ class Allocator {
     /** Get allocatable amount and cash amount based on target cash reserve percentage */
     const [allocatableAmount, cashAmount] = this.getAllocatableAmount(vault);
 
-    if (allocatableAmount + cashAmount === BigInt(0)) return;
+    if (allocatableAmount + cashAmount === BigInt(0)) {
+      logger.info({ message: "nothing to allocate" });
+      return;
+    }
 
     /** Compute final allocation and returns using simulated annealing */
     const [finalAllocation] = computeGreedySimAnnealing({
