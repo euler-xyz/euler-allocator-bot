@@ -13,7 +13,7 @@ export function getChain(chainId: number) {
     case 8453:
       return base;
     case 42161:
-      return base;
+      return arbitrum;
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
