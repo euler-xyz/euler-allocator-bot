@@ -23,13 +23,13 @@ const allocator = new Allocator({
 async function main() {
   try {
     await allocator.computeAllocation();
-    setTimeout(main, ENV.INTERVAL_TIME);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     logger.error(error);
     await sendNotifications({ message: `Error\n${errorMessage}`, type: 'error' });
   }
+  setTimeout(main, ENV.INTERVAL_TIME);
 }
 
 main();
