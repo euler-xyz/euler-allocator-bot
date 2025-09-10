@@ -1,5 +1,11 @@
 import { EulerEarnVaultLensAbi } from '@/constants/EulerEarnVaultLensAbi';
-import { Allocation, EulerEarn, protocolSchema, type StrategyConstants } from '@/types/types';
+import {
+  Allocation,
+  EulerEarn,
+  protocolSchema,
+  ReturnsDetails,
+  type StrategyConstants,
+} from '@/types/types';
 import {
   checkAllocationTotals,
   checkStrategyAmountsDiff,
@@ -13,7 +19,10 @@ import { getEulerEarnInternalBalance } from '@/utils/euler/getEulerEarnInternalB
 import { getEulerVaultDetails } from '@/utils/euler/getEulerVaultDetails';
 import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInitAlloc';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
-import { computeGreedySimAnnealing } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
+import {
+  computeGreedySimAnnealing,
+  isOverUtilized,
+} from '@/utils/greedyStrategy/computeGreedySimAnnealing';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
 import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
 
@@ -174,12 +183,16 @@ class Allocator {
     vault: EulerEarn,
     finalAllocation: Allocation,
     currentReturns: number,
+    currentReturnsDetails: ReturnsDetails,
     newReturns: number,
+    newReturnsDetails: ReturnsDetails,
   ) {
     /** Check if all assets are allocated */
     if (checkAllocationTotals(vault, finalAllocation)) {
       throw new Error('Total assets / total allocated mismatch');
     }
+
+    if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
 
     return newReturns - currentReturns >= this.allocationDiffTolerance;
   }
@@ -202,7 +215,7 @@ class Allocator {
     const [allocatableAmount, cashAmount] = this.getAllocatableAmount(vault);
 
     if (allocatableAmount + cashAmount === BigInt(0)) {
-      logger.info({ message: "nothing to allocate" });
+      logger.info({ message: 'nothing to allocate' });
       return;
     }
 
@@ -222,7 +235,9 @@ class Allocator {
       vault,
       finalAllocation,
       currentReturns,
+      currentReturnsDetails,
       finalReturns,
+      finalReturnsDetails,
     );
 
     const runLog = getRunLog(

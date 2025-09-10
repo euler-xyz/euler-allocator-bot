@@ -169,18 +169,30 @@ const isBetterAllocation = (
   const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
     const low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy < accu ? apy : accu;
+      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy < accu
+        ? apy
+        : accu;
     }, Infinity);
     const high = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy > accu ? apy : accu;
+      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy > accu
+        ? apy
+        : accu;
     }, 0);
 
     if (low > high) throw new Error('High/low apy');
 
     return high - low;
   };
-  if (newReturns > oldReturns) {
+
+  // if current utilization is higher than allowed, the priority is to lower it
+  // TODO handle case where reallocation lowering below max is not possible
+  // TODO use actual kink
+  if (isOverUtilized(oldReturnsDetails)) {
+    return !isOverUtilized(newReturnsDetails);
+  }
+
+  if (newReturns > oldReturns && !isOverUtilized(newReturnsDetails)) {
     if (ENV.MAX_STRATEGY_APY_DIFF) {
       const initialMaxDiff = getMaxAPYDiff(initialReturnsDetails);
       const newMaxDiff = getMaxAPYDiff(newReturnsDetails);
@@ -190,7 +202,9 @@ const isBetterAllocation = (
 
       if (initialMaxDiff > maxAllowedDiff) {
         // prioritize reducing the diff if over the threshold
-        return (newMaxDiff < maxAllowedDiff) || (newMaxDiff < initialMaxDiff && newMaxDiff < oldMaxDiff);
+        return (
+          newMaxDiff < maxAllowedDiff || (newMaxDiff < initialMaxDiff && newMaxDiff < oldMaxDiff)
+        );
       } else {
         // initial diff was in range, check the new one is as well
         return newMaxDiff < maxAllowedDiff;
@@ -198,6 +212,14 @@ const isBetterAllocation = (
     }
 
     return true;
+  }
+  return false;
+};
+
+export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
+  if (!ENV.MAX_UTILIZATION) return false;
+  for (const rd of Object.values(returnsDetails)) {
+    if (rd.utilization > ENV.MAX_UTILIZATION) return true;
   }
   return false;
 };

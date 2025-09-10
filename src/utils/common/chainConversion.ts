@@ -1,4 +1,4 @@
-import { base, mainnet, arbitrum } from 'viem/chains';
+import { arbitrum, base, mainnet } from 'viem/chains';
 
 /**
  * @notice Get the appropriate chain configuration based on chainId

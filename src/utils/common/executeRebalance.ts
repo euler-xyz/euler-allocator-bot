@@ -1,3 +1,4 @@
+import ENV from '@/constants/constants';
 import { EulerEarnAbi } from '@/constants/EulerEarnAbi';
 import { EvcAbi } from '@/constants/EvcAbi';
 import { Allocation } from '@/types/types';
@@ -11,7 +12,6 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { calculateEulerEarnAllocations } from './calculateEulerEarnAllocations';
-import ENV from '@/constants/constants';
 
 /**
  * @notice Executes a rebalance operation by adjusting allocation points and calling rebalance
@@ -72,7 +72,7 @@ export async function executeRebalance({
     abi: EvcAbi,
     functionName: 'batch',
     args: [batchItems],
-  } as const
+  } as const;
   const { request } = await rpcClient.simulateContract(tx);
 
   if (ENV.MAX_GAS_COST) {
@@ -81,11 +81,10 @@ export async function executeRebalance({
       const gasPrice = await rpcClient.getGasPrice();
 
       if (gas * gasPrice > ENV.MAX_GAS_COST) {
-        return "abort"
+        return 'abort';
       }
     } catch {} // some rpc providers don't support estimateGas method
   }
-
 
   if (broadcast) {
     const hash = await walletClient.writeContract(request);

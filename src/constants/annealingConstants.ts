@@ -4,7 +4,7 @@
  */
 const ANNEALING_CONSTANTS = {
   /** @notice Starting temperature for annealing process */
-  INITIAL_TEMP: 0.8,
+  INITIAL_TEMP: 0.9,
   /** @notice Minimum temperature before terminating */
   MIN_TEMP: 0.001,
   /** @notice Rate at which temperature decreases each iteration */

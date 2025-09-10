@@ -117,6 +117,7 @@ export type ReturnsDetails = {
   [key: Address]: {
     interestAPY: number;
     rewardsAPY: number;
+    utilization: number;
   };
 };
 

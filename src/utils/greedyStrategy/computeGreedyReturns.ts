@@ -48,9 +48,17 @@ export function computeGreedyReturns({
         rewardCampaigns: strategyInfo.rewardCampaigns,
       });
       returns += newAmount * (postImpactAPY + postImpactRewardAPY);
+      const utilization =
+        strategyInfo.totalBorrows === 0n
+          ? 0
+          : Number(
+              (strategyInfo.totalBorrows * 10n ** 6n) /
+                (strategyInfo.cash + allocationInfo.diff + strategyInfo.totalBorrows),
+            ) / 1e6;
       details[strategyInfo.vault] = {
         interestAPY: postImpactAPY,
         rewardsAPY: postImpactRewardAPY,
+        utilization,
       };
     } // Can add more protocols here
   });
