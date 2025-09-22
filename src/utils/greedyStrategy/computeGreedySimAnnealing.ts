@@ -4,7 +4,6 @@ import {
   Allocation,
   EulerEarn,
   ReturnsDetails,
-  StrategyDetails,
   type AllocationDetails,
 } from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
@@ -72,13 +71,18 @@ export function generateNeighbor(
     newAllocation[destVaultAddress],
     temperature,
   );
+
   if (transferAmount === BigInt(0)) return newAllocation;
 
   newAllocation[srcVaultAddress].newAmount -= transferAmount;
   newAllocation[srcVaultAddress].diff -= transferAmount;
   newAllocation[destVaultAddress].newAmount += transferAmount;
   newAllocation[destVaultAddress].diff += transferAmount;
-
+  // if (srcVaultAddress === '0x6aFB8d3F6D4A34e9cB2f217317f4dc8e05Aa673b' && destVaultAddress == '0x05d28A86E057364F6ad1a88944297E58Fc6160b3') {
+  //   if (transferAmount > 120000000000n && transferAmount < 200000000000n) {
+  //     console.log(newAllocation);
+  //   }
+  // }
   return newAllocation;
 }
 
@@ -119,7 +123,7 @@ export function computeGreedySimAnnealing({
         allocation: newAllocation,
       });
 
-      if (Math.random() < Math.exp((newReturns - currentReturns) / currentTemp)) {
+      if (Math.random() < Math.exp((newReturns - currentReturns) / currentTemp) && !isOverUtilized(newReturnsDetails)) {
         currentAllocation = structuredClone(newAllocation);
         currentReturns = newReturns;
 
