@@ -4,9 +4,11 @@ import { logger } from '../common/log';
 import { sendSlackMessage } from './slack';
 import { sendTelegramMessage } from './telegram';
 
+const stringify = (obj: any) => JSON.stringify(obj, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2)
+
 export async function notifyRun(runLog: RunLog) {
   if (runLog.result?.startsWith('0x')) {
-    const message = `Rebalance executed, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, APY ${runLog.current.returnsTotal} => ${runLog.new.returnsTotal} tx ${runLog.result}`;
+    const message = `Rebalance executed, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, APY ${runLog.current.returnsTotal} => ${runLog.new.returnsTotal} tx ${runLog.result}\n${stringify(runLog)}`;
     return sendNotifications({ message, type: 'info' });
   } else if (runLog.result === 'error') {
     const errorMessage =
