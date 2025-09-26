@@ -1,4 +1,4 @@
-import { arbitrum, base, mainnet } from 'viem/chains';
+import { arbitrum, base, mainnet, plasma } from 'viem/chains';
 
 /**
  * @notice Get the appropriate chain configuration based on chainId
@@ -14,6 +14,8 @@ export function getChain(chainId: number) {
       return base;
     case 42161:
       return arbitrum;
+    case 9745:
+      return plasma;
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
@@ -33,6 +35,8 @@ export function getChainName(chainId: number) {
       return 'base';
     case 42161:
       return 'arbitrum';
+    case 9745:
+      return 'plasma';
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
@@ -52,6 +56,8 @@ export function getChainNameDefiLlama(chainId: number) {
       return 'base';
     case 42161:
       return 'arbitrum';
+    case 9745:
+      return 'plasma';
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
