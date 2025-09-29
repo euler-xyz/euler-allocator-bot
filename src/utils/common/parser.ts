@@ -77,3 +77,21 @@ export function parseBigIntToNumberWithScale(bigIntValue: bigint, scaleDownFacto
 export function parseNumberToBigIntWithScale(numberValue: number, scaleUpFactor: number) {
   return parseUnits(numberValue.toFixed(scaleUpFactor), scaleUpFactor);
 }
+
+/**
+ * @notice Parse evn soft caps
+ */
+export function parseSoftCaps(value?: string) {
+  if (value) {
+    const caps = Object.fromEntries(
+      value.split(',').map(entry => {
+        const [vault, limit] = entry.split(':');
+        return [getAddress(vault), parseUnits(limit, 0)];
+      }),
+    );
+
+    return caps;
+  }
+
+  return {};
+}

@@ -2,6 +2,7 @@ import {
   parseContractAddress,
   parseEnvVar,
   parsePrivateKey,
+  parseSoftCaps,
   parseStrategies,
 } from '@/utils/common/parser';
 import dotenv from 'dotenv';
@@ -58,6 +59,8 @@ const ENV = {
   MAX_GAS_COST: BigInt(process.env.MAX_GAS_COST || 0),
   /** @notice Optional. Max utilization allowed after rebalance, fraction e.g. 0.85 = 85% */
   MAX_UTILIZATION: Number(process.env.MAX_UTILIZATION || 0),
+  /** @notice Optional. Cap allocation to strategies. Comma separated array of `vault_address:cap_amount`, where amount is in underlying wei */
+  SOFT_CAPS: parseSoftCaps(process.env.SOFT_CAPS),
 };
 
 export default ENV;

@@ -4,7 +4,8 @@ import { logger } from '../common/log';
 import { sendSlackMessage } from './slack';
 import { sendTelegramMessage } from './telegram';
 
-const stringify = (obj: any) => JSON.stringify(obj, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2)
+const stringify = (obj: any) =>
+  JSON.stringify(obj, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
 
 export async function notifyRun(runLog: RunLog) {
   if (runLog.result?.startsWith('0x')) {

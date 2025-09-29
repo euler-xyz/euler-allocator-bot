@@ -1,14 +1,9 @@
 import ANNEALING_CONSTANTS from '@/constants/annealingConstants';
 import ENV from '@/constants/constants';
-import {
-  Allocation,
-  EulerEarn,
-  ReturnsDetails,
-  type AllocationDetails,
-} from '@/types/types';
+import { Allocation, EulerEarn, ReturnsDetails, type AllocationDetails } from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
-import { Address, isAddressEqual, zeroAddress } from 'viem';
+import { Address, isAddressEqual, maxUint256 } from 'viem';
 
 /**
  * @notice Computes amount to transfer between vaults during annealing
@@ -28,13 +23,22 @@ function computeTransferAmount(
   const srvVaultMaxWithdraw = srcDetails.cash + srcVaultAllocation.diff;
   const destSupplyCap =
     destDetails.supplyCap - destDetails.totalBorrows - destDetails.cash - destVaultAllocation.diff;
-  const destStrategyCap = vault.strategies[destVault].cap - destVaultAllocation.diff;
+  const destStrategyCap = vault.strategies[destVault].cap - destVaultAllocation.newAmount;
+
+  let softCap = maxUint256;
+  if (ENV.SOFT_CAPS[destVault]) {
+    softCap =
+      destVaultAllocation.newAmount < ENV.SOFT_CAPS[destVault]
+        ? ENV.SOFT_CAPS[destVault] - destVaultAllocation.newAmount
+        : 0n;
+  }
 
   const maxTransfer = [
     srcCurrentAmount,
     srvVaultMaxWithdraw,
     destSupplyCap,
     destStrategyCap,
+    softCap,
   ].reduce((min, curr) => (curr < min ? curr : min));
   const maxTransferTempAdj =
     (maxTransfer * parseNumberToBigIntWithScale(temperature, 18)) / BigInt(10) ** BigInt(18);
@@ -78,11 +82,6 @@ export function generateNeighbor(
   newAllocation[srcVaultAddress].diff -= transferAmount;
   newAllocation[destVaultAddress].newAmount += transferAmount;
   newAllocation[destVaultAddress].diff += transferAmount;
-  // if (srcVaultAddress === '0x6aFB8d3F6D4A34e9cB2f217317f4dc8e05Aa673b' && destVaultAddress == '0x05d28A86E057364F6ad1a88944297E58Fc6160b3') {
-  //   if (transferAmount > 120000000000n && transferAmount < 200000000000n) {
-  //     console.log(newAllocation);
-  //   }
-  // }
   return newAllocation;
 }
 
@@ -123,7 +122,10 @@ export function computeGreedySimAnnealing({
         allocation: newAllocation,
       });
 
-      if (Math.random() < Math.exp((newReturns - currentReturns) / currentTemp) && !isOverUtilized(newReturnsDetails)) {
+      if (
+        Math.random() < Math.exp((newReturns - currentReturns) / currentTemp) &&
+        isAllocationAllowed(newAllocation, newReturnsDetails)
+      ) {
         currentAllocation = structuredClone(newAllocation);
         currentReturns = newReturns;
 
@@ -133,14 +135,21 @@ export function computeGreedySimAnnealing({
         if (
           isBetterAllocation(
             vault,
+            bestAllocation,
             bestReturns,
             bestReturnsDetails,
+            newAllocation,
             newReturns,
             newReturnsDetails,
             initialReturnsDetails,
           )
         ) {
           bestAllocation = structuredClone(newAllocation);
+          console.log(
+            'bestAllocation: ',
+            bestAllocation['0x44C10DA836d2aBe881b77bbB0b3DCE5f85C0C1Cc'].newAmount,
+            newReturns,
+          );
           bestReturns = newReturns;
           bestReturnsDetails = newReturnsDetails;
         }
@@ -164,8 +173,10 @@ export function computeGreedySimAnnealing({
 
 const isBetterAllocation = (
   vault: EulerEarn,
+  oldAllocation: Allocation,
   oldReturns: number,
   oldReturnsDetails: ReturnsDetails,
+  newAllocation: Allocation,
   newReturns: number,
   newReturnsDetails: ReturnsDetails,
   initialReturnsDetails: ReturnsDetails,
@@ -189,14 +200,14 @@ const isBetterAllocation = (
     return high - low;
   };
 
-  // if current utilization is higher than allowed, the priority is to lower it
-  // TODO handle case where reallocation lowering below max is not possible
+  // if current utilization is not allowed, the priority is to find an allowed one
+  // TODO handle case where reallocation lowering below max utilization is not possible
   // TODO use actual kink
-  if (isOverUtilized(oldReturnsDetails)) {
-    return !isOverUtilized(newReturnsDetails);
+  if (!isAllocationAllowed(oldAllocation, oldReturnsDetails)) {
+    return isAllocationAllowed(newAllocation, newReturnsDetails);
   }
 
-  if (newReturns > oldReturns && !isOverUtilized(newReturnsDetails)) {
+  if (newReturns > oldReturns && isAllocationAllowed(newAllocation, newReturnsDetails)) {
     if (ENV.MAX_STRATEGY_APY_DIFF) {
       const initialMaxDiff = getMaxAPYDiff(initialReturnsDetails);
       const newMaxDiff = getMaxAPYDiff(newReturnsDetails);
@@ -226,4 +237,15 @@ export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
     if (rd.utilization > ENV.MAX_UTILIZATION) return true;
   }
   return false;
+};
+
+export const isOverSoftCap = (allocation: Allocation) => {
+  for (const vault in allocation) {
+    if (ENV.SOFT_CAPS[vault] && ENV.SOFT_CAPS[vault] < allocation[vault].newAmount) return true;
+  }
+  return false;
+};
+
+export const isAllocationAllowed = (allocation: Allocation, returnsDetails: ReturnsDetails) => {
+  return !isOverUtilized(returnsDetails) && !isOverSoftCap(allocation);
 };
