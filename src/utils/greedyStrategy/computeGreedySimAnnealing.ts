@@ -3,7 +3,7 @@ import ENV from '@/constants/constants';
 import { Allocation, EulerEarn, ReturnsDetails, type AllocationDetails } from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
-import { Address, isAddressEqual, maxUint256 } from 'viem';
+import { Address, getAddress, isAddressEqual, maxUint256 } from 'viem';
 
 /**
  * @notice Computes amount to transfer between vaults during annealing
@@ -28,8 +28,8 @@ function computeTransferAmount(
   let softCap = maxUint256;
   if (ENV.SOFT_CAPS[destVault]) {
     softCap =
-      destVaultAllocation.newAmount < ENV.SOFT_CAPS[destVault]
-        ? ENV.SOFT_CAPS[destVault] - destVaultAllocation.newAmount
+      destVaultAllocation.newAmount < ENV.SOFT_CAPS[destVault].max
+        ? ENV.SOFT_CAPS[destVault].max - destVaultAllocation.newAmount
         : 0n;
   }
 
@@ -179,13 +179,17 @@ const isBetterAllocation = (
   const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
     const low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy < accu
+      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
+        !isMinAllocation(getAddress(strategy), newAllocation) &&
+        apy < accu
         ? apy
         : accu;
     }, Infinity);
     const high = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) && apy > accu
+      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
+        !isMinAllocation(getAddress(strategy), newAllocation) &&
+        apy > accu
         ? apy
         : accu;
     }, 0);
@@ -234,13 +238,29 @@ export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
   return false;
 };
 
-export const isOverSoftCap = (allocation: Allocation) => {
+export const isOutsideSoftCap = (allocation: Allocation) => {
   for (const vault in allocation) {
-    if (ENV.SOFT_CAPS[vault] && ENV.SOFT_CAPS[vault] < allocation[vault].newAmount) return true;
+    if (
+      ENV.SOFT_CAPS[vault] &&
+      (ENV.SOFT_CAPS[vault].max < allocation[vault].newAmount ||
+        ENV.SOFT_CAPS[vault].min > allocation[vault].newAmount)
+    )
+      return true;
   }
   return false;
 };
 
 export const isAllocationAllowed = (allocation: Allocation, returnsDetails: ReturnsDetails) => {
-  return !isOverUtilized(returnsDetails) && !isOverSoftCap(allocation);
+  return !isOverUtilized(returnsDetails) && !isOutsideSoftCap(allocation);
+};
+
+export const isMinAllocation = (strategy: Address, allocation: Allocation) => {
+  const PERCENT_TOLERANCE = 10n;
+  // if allocation is within 10% of the min, it's considered a forced allocation and is not checked for max apy diff
+  const res =
+    ENV.SOFT_CAPS[strategy]?.min &&
+    ((allocation[strategy].newAmount - ENV.SOFT_CAPS[strategy].min) * 100n) /
+      ENV.SOFT_CAPS[strategy].min >
+      PERCENT_TOLERANCE;
+  return Boolean(res);
 };

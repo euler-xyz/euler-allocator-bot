@@ -85,8 +85,8 @@ export function parseSoftCaps(value?: string) {
   if (value) {
     const caps = Object.fromEntries(
       value.split(',').map(entry => {
-        const [vault, limit] = entry.split(':');
-        return [getAddress(vault), parseUnits(limit, 0)];
+        const [vault, min, max] = entry.split(':');
+        return [getAddress(vault), { min: parseUnits(min, 0), max: parseUnits(max, 0) }];
       }),
     );
 
