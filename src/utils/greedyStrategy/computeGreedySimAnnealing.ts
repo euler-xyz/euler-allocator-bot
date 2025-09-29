@@ -145,11 +145,6 @@ export function computeGreedySimAnnealing({
           )
         ) {
           bestAllocation = structuredClone(newAllocation);
-          console.log(
-            'bestAllocation: ',
-            bestAllocation['0x44C10DA836d2aBe881b77bbB0b3DCE5f85C0C1Cc'].newAmount,
-            newReturns,
-          );
           bestReturns = newReturns;
           bestReturnsDetails = newReturnsDetails;
         }
