@@ -17,11 +17,9 @@ function loopGreedy(vault: EulerEarn, allocatableAmount: bigint) {
 
   sortedVaultsDesc.forEach(([strategyAddress, strategy]) => {
     const currentAmount = strategy.allocation;
-    console.log('currentAmount: ', currentAmount);
     const strategyCapAvailable = strategy.cap - currentAmount;
     const diff = amountLeft - currentAmount;
-    console.log('strategyAddress: ', strategyAddress);
-    console.log('diff: ', diff);
+
     let actualDiff = BigInt(0);
     if (diff > 0) {
       let availableToDeposit =
@@ -31,13 +29,9 @@ function loopGreedy(vault: EulerEarn, allocatableAmount: bigint) {
 
       actualDiff = diff > availableToDeposit ? availableToDeposit : diff;
     } else if (diff < 0) {
-      console.log('diff: ', diff);
-      console.log('strategy.details.cash: ', strategy.details.cash);
       actualDiff = -diff > strategy.details.cash ? -strategy.details.cash : diff;
-      console.log('actualDiff: ', actualDiff);
     }
     amountLeft -= actualDiff + currentAmount;
-    console.log('amountLeft: ', amountLeft);
 
     allocations[strategyAddress] = allocationDetailsSchema.parse({
       oldAmount: currentAmount,
@@ -90,8 +84,6 @@ export function computeGreedyInitAlloc({
   cashAmount: bigint;
 }) {
   const [allocations, amountLeft] = loopGreedy(vault, allocatableAmount);
-  console.log('amountLeft: ', amountLeft);
-  console.log('allocations: ', allocations);
 
   if (amountLeft !== 0n) {
     throw new Error('Non-zero amount left');
