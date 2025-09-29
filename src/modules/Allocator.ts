@@ -21,6 +21,7 @@ import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInit
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
 import {
   computeGreedySimAnnealing,
+  isOutsideSoftCap,
   isOverUtilized,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
@@ -181,6 +182,7 @@ class Allocator {
    */
   private async verifyAllocation(
     vault: EulerEarn,
+    currentAllocation: Allocation,
     finalAllocation: Allocation,
     currentReturns: number,
     currentReturnsDetails: ReturnsDetails,
@@ -193,6 +195,7 @@ class Allocator {
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
+    if (isOutsideSoftCap(currentAllocation)) return !isOutsideSoftCap(finalAllocation);
 
     return newReturns - currentReturns >= this.allocationDiffTolerance;
   }
@@ -233,6 +236,7 @@ class Allocator {
     /** Check if reallocation shouldn't occur */
     const allocationVerified = await this.verifyAllocation(
       vault,
+      currentAllocation,
       finalAllocation,
       currentReturns,
       currentReturnsDetails,
