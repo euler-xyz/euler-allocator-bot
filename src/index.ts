@@ -27,7 +27,10 @@ async function main() {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     logger.error(error);
-    await sendNotifications({ message: `chain: ${ENV.CHAIN_ID}, vault: ${ENV.EARN_VAULT_ADDRESS}, Error\n${errorMessage}`, type: 'error' });
+    await sendNotifications({
+      message: `chain: ${ENV.CHAIN_ID}, vault: ${ENV.EARN_VAULT_ADDRESS}, Error\n${errorMessage}`,
+      type: 'error',
+    });
   }
   setTimeout(main, ENV.INTERVAL_TIME);
 }
