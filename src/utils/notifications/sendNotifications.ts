@@ -9,7 +9,7 @@ const stringify = (obj: any) =>
 
 export async function notifyRun(runLog: RunLog) {
   if (runLog.result?.startsWith('0x')) {
-    const message = `Rebalance executed, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, APY ${runLog.current.returnsTotal} => ${runLog.new.returnsTotal} tx ${runLog.result}`;
+    const message = `Rebalance executed, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, APY ${runLog.current.returnsTotal.toFixed(3)} => ${runLog.new.returnsTotal.toFixed(3)} tx ${runLog.result}`;
     return sendNotifications({ message, type: 'info' });
   } else if (runLog.result === 'error') {
     const errorMessage =

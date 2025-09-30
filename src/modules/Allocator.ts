@@ -21,6 +21,7 @@ import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInit
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
 import {
   computeGreedySimAnnealing,
+  isFullyOverUtilized,
   isOutsideSoftCap,
   isOverUtilized,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
@@ -194,8 +195,12 @@ class Allocator {
       throw new Error('Total assets / total allocated mismatch');
     }
 
-    if (isOverUtilized(currentReturnsDetails) && isOverUtilized(newReturnsDetails)) {
-      throw new Error('Over-utilization unresolved')
+    if (
+      isOverUtilized(currentReturnsDetails) &&
+      !isFullyOverUtilized(currentReturnsDetails) &&
+      isOverUtilized(newReturnsDetails)
+    ) {
+      throw new Error('Over-utilization unresolved');
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);

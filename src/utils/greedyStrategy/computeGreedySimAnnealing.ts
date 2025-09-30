@@ -210,7 +210,7 @@ const isBetterAllocation = (
   // TODO handle case where reallocation lowering below max utilization is not possible
   // TODO use actual kink
   if (isOverUtilized(oldReturnsDetails) || isOutsideSoftCap(oldAllocation)) {
-    return !isOverUtilized(newReturnsDetails) && !isOutsideSoftCap(newAllocation)
+    return !isOverUtilized(newReturnsDetails) && !isOutsideSoftCap(newAllocation);
   }
 
   if (
@@ -242,10 +242,12 @@ const isBetterAllocation = (
 
 export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
   if (!ENV.MAX_UTILIZATION) return false;
-  for (const rd of Object.values(returnsDetails)) {
-    if (rd.utilization > ENV.MAX_UTILIZATION) return true;
-  }
-  return false;
+  return Object.values(returnsDetails).some(rd => rd.utilization > ENV.MAX_UTILIZATION);
+};
+
+export const isFullyOverUtilized = (returnsDetails: ReturnsDetails) => {
+  if (!ENV.MAX_UTILIZATION) return false;
+  return Object.values(returnsDetails).every(rd => rd.utilization > ENV.MAX_UTILIZATION);
 };
 
 export const isOverUtilizationImproved = (
@@ -299,14 +301,14 @@ export const isAllocationAllowed = (
     return false;
 
   if (isOverUtilized(oldReturnsDetails)) {
-    const res =  isOverUtilizationImproved(
-    oldAllocation,
-    oldReturnsDetails,
-    newAllocation,
-    newReturnsDetails,
-  );
-  return res
-}
+    const res = isOverUtilizationImproved(
+      oldAllocation,
+      oldReturnsDetails,
+      newAllocation,
+      newReturnsDetails,
+    );
+    return res;
+  }
   // TODO add soft caps improvement check
 
   return !isOverUtilized(oldReturnsDetails) && !isOutsideSoftCap(newAllocation);
