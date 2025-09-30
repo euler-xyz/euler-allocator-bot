@@ -194,6 +194,10 @@ class Allocator {
       throw new Error('Total assets / total allocated mismatch');
     }
 
+    if (isOverUtilized(currentReturnsDetails) && isOverUtilized(newReturnsDetails)) {
+      throw new Error('Over-utilization unresolved')
+    }
+
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
     if (isOutsideSoftCap(currentAllocation)) return !isOutsideSoftCap(finalAllocation);
 
