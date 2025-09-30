@@ -105,6 +105,7 @@ export function computeGreedySimAnnealing({
   });
 
   let currentReturns = initialReturns;
+  let currentReturnsDetails = initialReturnsDetails;
   let bestReturns = initialReturns;
   let bestReturnsDetails = initialReturnsDetails;
 
@@ -124,10 +125,16 @@ export function computeGreedySimAnnealing({
 
       if (
         Math.random() < Math.exp((newReturns - currentReturns) / currentTemp) &&
-        isAllocationAllowed(newAllocation, newReturnsDetails)
+        isAllocationAllowed(
+          currentAllocation,
+          currentReturnsDetails,
+          newAllocation,
+          newReturnsDetails,
+        )
       ) {
         currentAllocation = structuredClone(newAllocation);
         currentReturns = newReturns;
+        currentReturnsDetails = newReturnsDetails;
 
         acceptedMoves++;
         consecutiveFailures = 0;
@@ -202,11 +209,14 @@ const isBetterAllocation = (
   // if current utilization is not allowed, the priority is to find an allowed one
   // TODO handle case where reallocation lowering below max utilization is not possible
   // TODO use actual kink
-  if (!isAllocationAllowed(oldAllocation, oldReturnsDetails)) {
-    return isAllocationAllowed(newAllocation, newReturnsDetails);
+  if (isOverUtilized(oldReturnsDetails) || isOutsideSoftCap(oldAllocation)) {
+    return !isOverUtilized(newReturnsDetails) && !isOutsideSoftCap(newAllocation)
   }
 
-  if (newReturns > oldReturns && isAllocationAllowed(newAllocation, newReturnsDetails)) {
+  if (
+    newReturns > oldReturns &&
+    isAllocationAllowed(oldAllocation, oldReturnsDetails, newAllocation, newReturnsDetails)
+  ) {
     if (ENV.MAX_STRATEGY_APY_DIFF) {
       const initialMaxDiff = getMaxAPYDiff(initialReturnsDetails);
       const newMaxDiff = getMaxAPYDiff(newReturnsDetails);
@@ -238,6 +248,31 @@ export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
   return false;
 };
 
+export const isOverUtilizationImproved = (
+  oldAllocation: Allocation,
+  oldReturnsDetails: ReturnsDetails,
+  newAllocation: Allocation,
+  newReturnsDetails: ReturnsDetails,
+) => {
+  if (!ENV.MAX_UTILIZATION) return false;
+
+  const utilizationWeightedDeviation = (allocation: Allocation, returnsDetails: ReturnsDetails) =>
+    Object.entries(allocation).reduce((accu, [strategy, a]) => {
+      const utilization = returnsDetails[strategy as Address].utilization;
+
+      if (utilization > ENV.MAX_UTILIZATION) {
+        const excess = BigInt(Math.floor((utilization - ENV.MAX_UTILIZATION) * 10000));
+        return accu + (excess * a.newAmount) / 10000n;
+      }
+      return accu;
+    }, 0n);
+
+  return (
+    utilizationWeightedDeviation(newAllocation, newReturnsDetails) <
+    utilizationWeightedDeviation(oldAllocation, oldReturnsDetails)
+  );
+};
+
 export const isOutsideSoftCap = (allocation: Allocation) => {
   for (const vault in allocation) {
     if (
@@ -250,8 +285,31 @@ export const isOutsideSoftCap = (allocation: Allocation) => {
   return false;
 };
 
-export const isAllocationAllowed = (allocation: Allocation, returnsDetails: ReturnsDetails) => {
-  return !isOverUtilized(returnsDetails) && !isOutsideSoftCap(allocation);
+export const isAllocationAllowed = (
+  oldAllocation: Allocation,
+  oldReturnsDetails: ReturnsDetails,
+  newAllocation: Allocation,
+  newReturnsDetails: ReturnsDetails,
+) => {
+  // if old allocation was within limits and the new one goes outside - don't allow
+  if (
+    (!isOverUtilized(oldReturnsDetails) && isOverUtilized(newReturnsDetails)) ||
+    (!isOutsideSoftCap(oldAllocation) && isOutsideSoftCap(newAllocation))
+  )
+    return false;
+
+  if (isOverUtilized(oldReturnsDetails)) {
+    const res =  isOverUtilizationImproved(
+    oldAllocation,
+    oldReturnsDetails,
+    newAllocation,
+    newReturnsDetails,
+  );
+  return res
+}
+  // TODO add soft caps improvement check
+
+  return !isOverUtilized(oldReturnsDetails) && !isOutsideSoftCap(newAllocation);
 };
 
 export const isMinAllocation = (strategy: Address, allocation: Allocation) => {
