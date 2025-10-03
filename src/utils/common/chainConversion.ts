@@ -1,5 +1,34 @@
+import { defineChain } from 'viem';
 import { arbitrum, base, mainnet } from 'viem/chains';
 import { defineChain } from 'viem';
+
+export const plasma = defineChain({
+  id: 9745,
+  name: "Plasma",
+  nativeCurrency: {
+    decimals: 18,
+    name: "XPL",
+    symbol: "XPL",
+  },
+  blockExplorers: {
+    default: {
+      name: "Plasma Explorer",
+      url: "https://plasmascan.to/",
+    },
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.plasma.to"],
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: "0xcA11bde05977b3631167028862bE2a173976CA11",
+      blockCreated: 0,
+    },
+  },
+} as const)
+
 
 export const plasma = defineChain({
   id: 9745,
