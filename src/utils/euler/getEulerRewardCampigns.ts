@@ -38,14 +38,26 @@ export async function getEulerRewardCampigns({
   totalShares: bigint;
   rpcClient: PublicClient;
 }) {
-  const data: MerklData[] = await fetch(
+  const response = await fetch(
     `https://api.merkl.xyz/v4/campaigns/?chainId=${chainId}&type=EULER`,
     { signal: AbortSignal.timeout(15000) }, // TODO config
-  ).then(response => response.json());
+  );
+  let data: MerklData[] = []
+  let errorMessage
+  if (response.ok) {
+    try {
+      data = await response.json();
+      if (!data.length) {
+        errorMessage = `Error\nNo Merkl data found for chainId: ${chainId}`
+      }
+    } catch {
+      errorMessage = `Error parsing response, ${await response.text()}`
+    }
+  }
 
-  if (!data || !data.length) {
+  if (errorMessage) {
     await sendTelegramMessage({
-      message: `Error\nNo Merkl data found for chainId: ${chainId}`,
+      message: errorMessage,
       type: 'error',
     });
     return [];
