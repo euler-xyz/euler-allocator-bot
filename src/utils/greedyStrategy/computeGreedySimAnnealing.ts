@@ -25,6 +25,9 @@ function computeTransferAmount(
     destDetails.supplyCap - destDetails.totalBorrows - destDetails.cash - destVaultAllocation.diff;
   const destStrategyCap = vault.strategies[destVault].cap - destVaultAllocation.newAmount;
 
+  // if any of the caps is negative, no transfer is possible
+  if (destSupplyCap < 0n || destStrategyCap < 0n || srvVaultMaxWithdraw < 0n) return 0n;
+
   let softCap = maxUint256;
   if (ENV.SOFT_CAPS[destVault]) {
     softCap =
