@@ -200,7 +200,8 @@ class Allocator {
       !isFullyOverUtilized(currentReturnsDetails) &&
       isOverUtilized(newReturnsDetails)
     ) {
-      throw new Error('Over-utilization unresolved');
+      // throw new Error('Over-utilization unresolved');
+      return false
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
