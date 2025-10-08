@@ -1,4 +1,4 @@
-import { zeroAddress } from 'viem';
+import { Address, zeroAddress } from 'viem';
 import { protocolSchema } from '../../../src/types/types';
 import {
   computeGreedySimAnnealing,
@@ -17,13 +17,16 @@ jest.mock('../../../src/constants/annealingConstants', () => ({
   },
 }));
 
+const computeGreedyReturnsMock = jest.fn();
+
 jest.mock('../../../src/utils/greedyStrategy/computeGreedyReturns', () => ({
-  computeGreedyReturns: jest.fn(() => 8),
+  computeGreedyReturns: (...args: unknown[]) => computeGreedyReturnsMock(...args),
 }));
 
 describe('computeGreedySimAnnealing', () => {
   const defaultVaultProps = {
-    vault: '0x0',
+    vault: zeroAddress as Address,
+    symbol: 'SYM',
     protocol: protocolSchema.Enum.euler,
     borrowAPY: 0,
     supplyAPY: 0,
@@ -43,36 +46,83 @@ describe('computeGreedySimAnnealing', () => {
     },
   };
 
+  const buildVault = (details: Record<string, typeof defaultVaultProps>) => {
+    const addresses = Object.keys(details) as Address[];
+    return {
+      strategies: Object.fromEntries(
+        addresses.map(address => [
+          address,
+          {
+            cap: BigInt(10_000_000),
+            protocol: protocolSchema.Enum.euler,
+            allocation: BigInt(0),
+            details: details[address],
+          },
+        ]),
+      ),
+      idleVaultAddress: zeroAddress,
+      assetDecimals: 6,
+      initialAllocationQueue: addresses,
+    };
+  };
+
+const buildReturns = (value: number, addresses: Address[]) => ({
+  totalReturns: value,
+  details: Object.fromEntries(
+    addresses.map(address => [
+      address,
+      {
+        interestAPY: value,
+        rewardsAPY: 0,
+        utilization: 0.5,
+      },
+    ]),
+  ),
+});
+
+const stringifyAllocation = (
+  allocation: Record<string, { newAmount: bigint; oldAmount: bigint; diff: bigint }>,
+) =>
+  Object.fromEntries(
+    Object.entries(allocation).map(([address, values]) => [
+      address,
+      {
+        newAmount: values.newAmount.toString(),
+        oldAmount: values.oldAmount.toString(),
+        diff: values.diff.toString(),
+      },
+    ]),
+  );
+
   describe('neighbour generation', () => {
+    let randomSpy: jest.SpyInstance<number, []>;
+
     beforeEach(() => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.4);
+      randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
     });
+
     afterEach(() => {
-      jest.spyOn(Math, 'random').mockRestore();
+      randomSpy.mockRestore();
     });
 
     it('case - no constraints', () => {
       const temperature = 1;
-      const vaultDetails = {
+      const strategyDetails = {
         '0x1': {
           ...defaultVaultProps,
-          vault: '0x1',
+          vault: '0x1' as Address,
           cash: BigInt(3000),
         },
         '0x2': {
           ...defaultVaultProps,
-          vault: '0x2',
+          vault: '0x2' as Address,
           supplyCap: BigInt(15000),
           cash: BigInt(9000),
           totalBorrows: BigInt(1000),
         },
       };
+      const vault = buildVault(strategyDetails);
       const currentAllocation = {
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
         '0x1': {
           newAmount: BigInt(700),
           oldAmount: BigInt(500),
@@ -85,47 +135,40 @@ describe('computeGreedySimAnnealing', () => {
         },
       };
 
-      const newAllocation = generateNeighbor(currentAllocation, vaultDetails, temperature);
-      expect(newAllocation).toEqual({
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
-        '0x1': {
-          newAmount: BigInt(420),
-          oldAmount: BigInt(500),
-          diff: BigInt(-80),
-        },
-        '0x2': {
-          newAmount: BigInt(530),
-          oldAmount: BigInt(300),
-          diff: BigInt(230),
-        },
-      });
+      const newAllocation = generateNeighbor(vault, currentAllocation, temperature);
+      expect(stringifyAllocation(newAllocation)).toEqual(
+        stringifyAllocation({
+          '0x1': {
+            newAmount: BigInt(420),
+            oldAmount: BigInt(500),
+            diff: BigInt(-80),
+          },
+          '0x2': {
+            newAmount: BigInt(530),
+            oldAmount: BigInt(300),
+            diff: BigInt(230),
+          },
+        }),
+      );
     });
     it('case - withdrawal constraint', () => {
       const temperature = 1;
-      const vaultDetails = {
+      const strategyDetails = {
         '0x1': {
           ...defaultVaultProps,
-          vault: '0x1',
+          vault: '0x1' as Address,
           cash: BigInt(150),
         },
         '0x2': {
           ...defaultVaultProps,
-          vault: '0x2',
+          vault: '0x2' as Address,
           supplyCap: BigInt(15000),
           cash: BigInt(9000),
           totalBorrows: BigInt(1000),
         },
       };
+      const vault = buildVault(strategyDetails);
       const currentAllocation = {
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
         '0x1': {
           newAmount: BigInt(400),
           oldAmount: BigInt(500),
@@ -138,47 +181,40 @@ describe('computeGreedySimAnnealing', () => {
         },
       };
 
-      const newAllocation = generateNeighbor(currentAllocation, vaultDetails, temperature);
-      expect(newAllocation).toEqual({
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
-        '0x1': {
-          newAmount: BigInt(380),
-          oldAmount: BigInt(500),
-          diff: BigInt(-120),
-        },
-        '0x2': {
-          newAmount: BigInt(320),
-          oldAmount: BigInt(300),
-          diff: BigInt(20),
-        },
-      });
+      const newAllocation = generateNeighbor(vault, currentAllocation, temperature);
+      expect(stringifyAllocation(newAllocation)).toEqual(
+        stringifyAllocation({
+          '0x1': {
+            newAmount: BigInt(380),
+            oldAmount: BigInt(500),
+            diff: BigInt(-120),
+          },
+          '0x2': {
+            newAmount: BigInt(320),
+            oldAmount: BigInt(300),
+            diff: BigInt(20),
+          },
+        }),
+      );
     });
     it('case - deposit constraint', () => {
       const temperature = 1;
-      const vaultDetails = {
+      const strategyDetails = {
         '0x1': {
           ...defaultVaultProps,
-          vault: '0x1',
+          vault: '0x1' as Address,
           cash: BigInt(3000),
         },
         '0x2': {
           ...defaultVaultProps,
-          vault: '0x2',
+          vault: '0x2' as Address,
           supplyCap: BigInt(15000),
           cash: BigInt(9000),
           totalBorrows: BigInt(5800),
         },
       };
+      const vault = buildVault(strategyDetails);
       const currentAllocation = {
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
         '0x1': {
           newAmount: BigInt(700),
           oldAmount: BigInt(500),
@@ -191,49 +227,43 @@ describe('computeGreedySimAnnealing', () => {
         },
       };
 
-      const newAllocation = generateNeighbor(currentAllocation, vaultDetails, temperature);
-      expect(newAllocation).toEqual({
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
-        '0x1': {
-          newAmount: BigInt(660),
-          oldAmount: BigInt(500),
-          diff: BigInt(160),
-        },
-        '0x2': {
-          newAmount: BigInt(440),
-          oldAmount: BigInt(300),
-          diff: BigInt(140),
-        },
-      });
+      const newAllocation = generateNeighbor(vault, currentAllocation, temperature);
+      expect(stringifyAllocation(newAllocation)).toEqual(
+        stringifyAllocation({
+          '0x1': {
+            newAmount: BigInt(660),
+            oldAmount: BigInt(500),
+            diff: BigInt(160),
+          },
+          '0x2': {
+            newAmount: BigInt(440),
+            oldAmount: BigInt(300),
+            diff: BigInt(140),
+          },
+        }),
+      );
     });
   });
 
   describe('main function', () => {
-    const assetDecimals = 6;
-    const vaultDetails = {
+    let randomSpy: jest.SpyInstance<number, []>;
+    const strategyDetails = {
       '0x1': {
         ...defaultVaultProps,
-        vault: '0x1',
+        vault: '0x1' as Address,
         cash: BigInt(3000),
       },
       '0x2': {
         ...defaultVaultProps,
-        vault: '0x2',
+        vault: '0x2' as Address,
         supplyCap: BigInt(15000),
         cash: BigInt(9000),
         totalBorrows: BigInt(1000),
       },
     };
+    const vault = buildVault(strategyDetails);
+    const addresses = Object.keys(strategyDetails) as Address[];
     const initialAllocation = {
-      [zeroAddress]: {
-        newAmount: BigInt(0),
-        oldAmount: BigInt(0),
-        diff: BigInt(0),
-      },
       '0x1': {
         newAmount: BigInt(700),
         oldAmount: BigInt(500),
@@ -246,57 +276,60 @@ describe('computeGreedySimAnnealing', () => {
       },
     };
 
-    it('case - new proposition is lower, random chance gets rejected', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.4);
-
-      const [bestAllocation, bestReturns] = computeGreedySimAnnealing({
-        assetDecimals,
-        vaultDetails,
-        initialAllocation,
-        initialReturns: 10,
-      });
-      expect(bestAllocation).toEqual(initialAllocation);
-      expect(bestReturns).toEqual(10);
+    beforeEach(() => {
+      computeGreedyReturnsMock.mockReset();
+      randomSpy = jest.spyOn(Math, 'random');
     });
-    it('case - new proposition is lower, random chance gets accepted, not better than best', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.1);
 
-      const [bestAllocation, bestReturns] = computeGreedySimAnnealing({
-        assetDecimals,
-        vaultDetails,
-        initialAllocation,
-        initialReturns: 9,
-      });
-      expect(bestAllocation).toEqual(initialAllocation);
-      expect(bestReturns).toEqual(9);
+    afterEach(() => {
+      randomSpy.mockRestore();
     });
-    it('case - new proposition is higher, better than best', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.4);
+
+    it('rejects worse allocations when random threshold is high', () => {
+      randomSpy.mockReturnValue(0.4);
+
+      computeGreedyReturnsMock
+        .mockReturnValueOnce(buildReturns(10, addresses))
+        .mockReturnValueOnce(buildReturns(9, addresses));
 
       const [bestAllocation, bestReturns] = computeGreedySimAnnealing({
-        assetDecimals,
-        vaultDetails,
+        vault,
         initialAllocation,
-        initialReturns: 6,
       });
-      expect(bestAllocation).toEqual({
-        [zeroAddress]: {
-          newAmount: BigInt(0),
-          oldAmount: BigInt(0),
-          diff: BigInt(0),
-        },
-        '0x1': {
-          newAmount: BigInt(672),
-          oldAmount: BigInt(500),
-          diff: BigInt(172),
-        },
-        '0x2': {
-          newAmount: BigInt(278),
-          oldAmount: BigInt(300),
-          diff: BigInt(-22),
-        },
+
+      expect(stringifyAllocation(bestAllocation)).toEqual(stringifyAllocation(initialAllocation));
+      expect(bestReturns).toBe(10);
+    });
+
+    it('accepts worse allocations when random threshold is low but keeps best', () => {
+      randomSpy.mockReturnValue(0.0);
+
+      computeGreedyReturnsMock
+        .mockReturnValueOnce(buildReturns(10, addresses))
+        .mockReturnValueOnce(buildReturns(9, addresses));
+
+      const [bestAllocation, bestReturns] = computeGreedySimAnnealing({
+        vault,
+        initialAllocation,
       });
-      expect(bestReturns).toEqual(8);
+
+      expect(stringifyAllocation(bestAllocation)).toEqual(stringifyAllocation(initialAllocation));
+      expect(bestReturns).toBe(10);
+    });
+
+    it('updates best allocation when returns improve', () => {
+      randomSpy.mockReturnValue(0.0);
+
+      computeGreedyReturnsMock
+        .mockReturnValueOnce(buildReturns(8, addresses))
+        .mockReturnValueOnce(buildReturns(9, addresses));
+
+      const [bestAllocation, bestReturns] = computeGreedySimAnnealing({
+        vault,
+        initialAllocation,
+      });
+
+      expect(bestReturns).toBe(9);
     });
   });
 });

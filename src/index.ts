@@ -1,4 +1,3 @@
-// import prismaClient from '@/data/dbClient';
 import rpcClient from '@/data/rpcClient';
 
 import ENV from '@/constants/constants';

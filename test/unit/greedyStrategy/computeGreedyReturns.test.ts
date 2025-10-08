@@ -1,4 +1,4 @@
-import { zeroAddress } from 'viem';
+import { Address, zeroAddress } from 'viem';
 import { protocolSchema } from '../../../src/types/types';
 import { computeGreedyReturns } from '../../../src/utils/greedyStrategy/computeGreedyReturns';
 
@@ -13,7 +13,8 @@ jest.mock('@/utils/euler/resolveEulerUnits', () => {
 
 describe('computeGreedyReturns', () => {
   const defaultVaultProps = {
-    vault: '0x0',
+    vault: zeroAddress as Address,
+    symbol: 'SYM',
     protocol: protocolSchema.Enum.euler,
     borrowAPY: 0,
     supplyAPY: 0,
@@ -33,11 +34,11 @@ describe('computeGreedyReturns', () => {
     },
   };
 
-  it('case - normal', () => {
-    const vaultDetails = {
+  it('computes weighted returns for euler strategies', () => {
+    const strategyDetails = {
       '0x1': {
         ...defaultVaultProps,
-        vault: '0x1',
+        vault: '0x1' as Address,
         cash: BigInt(1050 * 1e6),
         totalBorrows: BigInt(9100 * 1e6),
         interestFee: 1000,
@@ -50,17 +51,32 @@ describe('computeGreedyReturns', () => {
       },
       '0x2': {
         ...defaultVaultProps,
-        vault: '0x2',
+        vault: '0x2' as Address,
         cash: BigInt(7000 * 1e6),
         totalBorrows: BigInt(3000 * 1e6),
       },
     };
-    const initialAllocation = {
-      [zeroAddress]: {
-        oldAmount: BigInt(100 * 1e6),
-        newAmount: BigInt(200 * 1e6),
-        diff: BigInt(100 * 1e6),
-      },
+
+    const initialQueue = Object.keys(strategyDetails) as Address[];
+
+    const vault = {
+      strategies: Object.fromEntries(
+        Object.entries(strategyDetails).map(([address, details]) => [
+          address,
+          {
+            cap: BigInt(0),
+            protocol: protocolSchema.Enum.euler,
+            allocation: BigInt(0),
+            details,
+          },
+        ]),
+      ),
+      idleVaultAddress: zeroAddress,
+      assetDecimals: 6,
+      initialAllocationQueue: initialQueue,
+    } as const;
+
+    const allocation = {
       '0x1': {
         oldAmount: BigInt(450 * 1e6),
         newAmount: BigInt(300 * 1e6),
@@ -72,12 +88,14 @@ describe('computeGreedyReturns', () => {
         diff: BigInt(0),
       },
     };
-    const assetDecimals = 6;
-    const result = computeGreedyReturns({
-      assetDecimals,
-      vaultDetails,
-      initialAllocation,
+
+    const { totalReturns, details } = computeGreedyReturns({
+      vault,
+      allocation,
     });
-    expect(result).toBe(8.337);
+
+    expect(totalReturns).toBeCloseTo(10.42125, 5);
+    expect(Object.keys(details)).toEqual(['0x1', '0x2']);
+    expect(details['0x1'].utilization).toBeGreaterThan(0);
   });
 });
