@@ -1,4 +1,3 @@
-import { Decimal } from '@prisma/client/runtime/library';
 import {
   parseBigIntToNumberWithScale,
   parseContractAddress,
@@ -8,6 +7,7 @@ import {
   parsePrivateKey,
   parseStrategies,
 } from '../../../src/utils/common/parser';
+import { getAddress } from 'viem';
 
 describe('common utils', () => {
   describe('parseEnvVar', () => {
@@ -22,21 +22,28 @@ describe('common utils', () => {
   });
 
   describe('parseDecimalToBigInt', () => {
+    class StubDecimal {
+      constructor(private readonly fixedValue: string) {}
+      toFixed() {
+        return this.fixedValue;
+      }
+    }
+
     it('should convert Decimal to BigInt', () => {
-      const decimal = new Decimal('1234567890');
+      const decimal = new StubDecimal('1234567890');
       const result = parseDecimalToBigInt(decimal);
       expect(result).toBe(BigInt('1234567890'));
     });
 
     it('should convert Decimal to BigInt with scientific notation', () => {
-      const decimal = new Decimal('2.413979216e+21');
+      const decimal = new StubDecimal('2413979216000000000000');
       const result = parseDecimalToBigInt(decimal);
       expect(result).toBe(BigInt('2413979216000000000000'));
     });
   });
 
   describe('parseStrategies', () => {
-    it('should handle multiple strategies and parse addresses to lowercase', () => {
+    it('should handle multiple strategies and return checksum encoded addresses', () => {
       const strategies = [
         'euler:0x1234567890abcdef1234567890abcdef12345678',
         'euler:0xABCDEF1234567890abcdef1234567890abcdef12',
@@ -45,11 +52,11 @@ describe('common utils', () => {
       expect(result).toEqual([
         {
           protocol: 'euler',
-          vaultAddress: '0x1234567890abcdef1234567890abcdef12345678',
+          vaultAddress: getAddress('0x1234567890abcdef1234567890abcdef12345678'),
         },
         {
           protocol: 'euler',
-          vaultAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
+          vaultAddress: getAddress('0xABCDEF1234567890abcdef1234567890abcdef12'),
         },
       ]);
     });
@@ -66,10 +73,10 @@ describe('common utils', () => {
   });
 
   describe('parseContractAddress', () => {
-    it('should convert address to lowercase and return address typed as Address', () => {
+    it('should return checksum encoded address', () => {
       const address = '0x1234567890ABCDEF1234567890ABCDEF12345678';
       const result = parseContractAddress(address);
-      expect(result).toBe('0x1234567890abcdef1234567890abcdef12345678');
+      expect(result).toBe(getAddress(address));
       expect(result.startsWith('0x')).toBe(true);
       expect(result.length).toBe(42);
     });

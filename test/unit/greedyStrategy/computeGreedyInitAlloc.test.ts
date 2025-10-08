@@ -1,282 +1,184 @@
 import { describe, expect, it } from '@jest/globals';
-import { zeroAddress } from 'viem';
+import { Address, zeroAddress } from 'viem';
 import { protocolSchema } from '../../../src/types/types';
 import { computeGreedyInitAlloc } from '../../../src/utils/greedyStrategy/computeGreedyInitAlloc';
 
-describe('computeGreedyInitAlloc', () => {
-  const defaultVaultProps = {
-    vault: '0x0',
-    protocol: protocolSchema.Enum.euler,
-    borrowAPY: 0,
-    supplyAPY: 0,
-    rewardCampaigns: [],
-    rewardAPY: 0,
-    cash: BigInt(0),
-    totalBorrows: BigInt(0),
-    totalShares: BigInt(0),
-    interestFee: 0,
-    irmConfig: {
-      type: 'irm' as const,
-      baseRate: BigInt(0),
-      kink: BigInt(0),
-      slope1: BigInt(0),
-      slope2: BigInt(0),
+const baseStrategy = {
+  symbol: 'SYM',
+  protocol: protocolSchema.Enum.euler,
+  borrowAPY: 0,
+  supplyAPY: 0,
+  rewardCampaigns: [],
+  rewardAPY: 0,
+  cash: 0n,
+  totalBorrows: 0n,
+  totalShares: 0n,
+  interestFee: 0,
+  supplyCap: 0n,
+  irmConfig: {
+    type: 'irm' as const,
+    baseRate: 0n,
+    kink: 0n,
+    slope1: 0n,
+    slope2: 0n,
+  },
+};
+
+type StrategyConfig = {
+  address: Address;
+  supplyAPY: number;
+  rewardAPY: number;
+  supplyCap: bigint;
+  cash: bigint;
+  totalBorrows: bigint;
+  allocation: bigint;
+  cap?: bigint;
+};
+
+const createVault = (strategies: StrategyConfig[], idleAllocation: bigint) => {
+  const entries = strategies.map(({ address, allocation, cap, ...rest }) => [
+    address,
+    {
+      cap: cap ?? rest.supplyCap,
+      protocol: protocolSchema.Enum.euler,
+      allocation,
+      details: {
+        ...baseStrategy,
+        ...rest,
+        vault: address,
+      },
     },
+  ]);
+
+  entries.push([
+    zeroAddress,
+    {
+      cap: 0n,
+      protocol: protocolSchema.Enum.euler,
+      allocation: idleAllocation,
+      details: {
+        ...baseStrategy,
+        vault: zeroAddress,
+        supplyCap: 0n,
+        cash: idleAllocation,
+      },
+    },
+  ]);
+
+  return {
+    strategies: Object.fromEntries(entries),
+    idleVaultAddress: zeroAddress,
+    assetDecimals: 6,
+    initialAllocationQueue: entries.map(([address]) => address as Address),
   };
+};
 
-  it('no constraints', () => {
-    const vaultDetails = {
-      '0x1': {
-        ...defaultVaultProps,
-        vault: '0x1',
-        supplyAPY: 0.1,
-        rewardAPY: 0.1,
-        supplyCap: BigInt(10000),
-        cash: BigInt(3000),
-        totalBorrows: BigInt(3000),
+const serializeAllocation = (allocation: Record<string, { oldAmount: bigint; newAmount: bigint; diff: bigint }>) =>
+  Object.fromEntries(
+    Object.entries(allocation).map(([address, values]) => [
+      address,
+      {
+        oldAmount: values.oldAmount.toString(),
+        newAmount: values.newAmount.toString(),
+        diff: values.diff.toString(),
       },
-      '0x2': {
-        ...defaultVaultProps,
-        vault: '0x2',
-        supplyAPY: 0.2,
-        rewardAPY: 0.2,
-        supplyCap: BigInt(15000),
-        cash: BigInt(9000),
-        totalBorrows: BigInt(1000),
-      },
-    };
-    const strategyAmounts = {
-      [zeroAddress]: BigInt(100),
-      '0x1': BigInt(300),
-      '0x2': BigInt(500),
-    };
-    const allocatableAmount = BigInt(800);
-    const cashAmount = BigInt(100);
+    ]),
+  );
+
+describe('computeGreedyInitAlloc', () => {
+  it('allocates additional amount to the highest APY strategy', () => {
+    const vault = createVault(
+      [
+        {
+          address: '0x0000000000000000000000000000000000000001' as Address,
+          supplyAPY: 0.1,
+          rewardAPY: 0.1,
+          supplyCap: 10_000n,
+          cash: 3_000n,
+          totalBorrows: 3_000n,
+          allocation: 300n,
+        },
+        {
+          address: '0x0000000000000000000000000000000000000002' as Address,
+          supplyAPY: 0.2,
+          rewardAPY: 0.2,
+          supplyCap: 15_000n,
+          cash: 9_000n,
+          totalBorrows: 1_000n,
+          allocation: 500n,
+        },
+      ],
+      100n,
+    );
 
     const allocations = computeGreedyInitAlloc({
-      vaultDetails,
-      strategyAmounts,
-      allocatableAmount,
-      cashAmount,
+      vault,
+      allocatableAmount: 800n,
+      cashAmount: 100n,
     });
-    expect(allocations[zeroAddress]).toStrictEqual({
-      oldAmount: BigInt(100),
-      newAmount: BigInt(100),
-      diff: BigInt(0),
-    });
-    expect(allocations['0x1']).toStrictEqual({
-      oldAmount: BigInt(300),
-      newAmount: BigInt(0),
-      diff: BigInt(-300),
-    });
-    expect(allocations['0x2']).toStrictEqual({
-      oldAmount: BigInt(500),
-      newAmount: BigInt(800),
-      diff: BigInt(300),
-    });
+
+    expect(serializeAllocation(allocations)).toEqual(
+      serializeAllocation({
+        [zeroAddress]: { oldAmount: 100n, newAmount: 100n, diff: 0n },
+        '0x0000000000000000000000000000000000000001': {
+          oldAmount: 300n,
+          newAmount: 0n,
+          diff: -300n,
+        },
+        '0x0000000000000000000000000000000000000002': {
+          oldAmount: 500n,
+          newAmount: 800n,
+          diff: 300n,
+        },
+      }),
+    );
   });
-  it('supply cap constraint, enough space in 2nd vault', () => {
-    const vaultDetails = {
-      '0x1': {
-        ...defaultVaultProps,
-        vault: '0x1',
-        supplyAPY: 0.1,
-        rewardAPY: 0.1,
-        supplyCap: BigInt(6300),
-        cash: BigInt(3000),
-        totalBorrows: BigInt(3000),
-      },
-      '0x2': {
-        ...defaultVaultProps,
-        vault: '0x2',
-        supplyAPY: 0.2,
-        rewardAPY: 0.2,
-        supplyCap: BigInt(10200),
-        cash: BigInt(9000),
-        totalBorrows: BigInt(1000),
-      },
-    };
-    const strategyAmounts = {
-      [zeroAddress]: BigInt(400),
-      '0x1': BigInt(300),
-      '0x2': BigInt(500),
-    };
-    const allocatableAmount = BigInt(1100);
-    const cashAmount = BigInt(100);
+
+  it('respects supply caps and available cash when reallocating', () => {
+    const vault = createVault(
+      [
+        {
+          address: '0x0000000000000000000000000000000000000001' as Address,
+          supplyAPY: 0.1,
+          rewardAPY: 0.1,
+          supplyCap: 6_300n,
+          cash: 150n,
+          totalBorrows: 3_000n,
+          allocation: 500n,
+        },
+        {
+          address: '0x0000000000000000000000000000000000000002' as Address,
+          supplyAPY: 0.2,
+          rewardAPY: 0.2,
+          supplyCap: 10_200n,
+          cash: 9_000n,
+          totalBorrows: 1_000n,
+          allocation: 300n,
+        },
+      ],
+      400n,
+    );
 
     const allocations = computeGreedyInitAlloc({
-      vaultDetails,
-      strategyAmounts,
-      allocatableAmount,
-      cashAmount,
+      vault,
+      allocatableAmount: 1_100n,
+      cashAmount: 100n,
     });
-    expect(allocations[zeroAddress]).toStrictEqual({
-      oldAmount: BigInt(400),
-      newAmount: BigInt(100),
-      diff: BigInt(-300),
-    });
-    expect(allocations['0x1']).toStrictEqual({
-      oldAmount: BigInt(300),
-      newAmount: BigInt(400),
-      diff: BigInt(100),
-    });
-    expect(allocations['0x2']).toStrictEqual({
-      oldAmount: BigInt(500),
-      newAmount: BigInt(700),
-      diff: BigInt(200),
-    });
-  });
-  it('supply cap constraint in both vaults', () => {
-    const vaultDetails = {
-      '0x1': {
-        ...defaultVaultProps,
-        vault: '0x1',
-        supplyAPY: 0.1,
-        rewardAPY: 0.1,
-        supplyCap: BigInt(6050),
-        cash: BigInt(3000),
-        totalBorrows: BigInt(3000),
-      },
-      '0x2': {
-        ...defaultVaultProps,
-        vault: '0x2',
-        supplyAPY: 0.2,
-        rewardAPY: 0.2,
-        supplyCap: BigInt(10200),
-        cash: BigInt(9000),
-        totalBorrows: BigInt(1000),
-      },
-    };
-    const strategyAmounts = {
-      [zeroAddress]: BigInt(400),
-      '0x1': BigInt(300),
-      '0x2': BigInt(500),
-    };
-    const allocatableAmount = BigInt(1100);
-    const cashAmount = BigInt(100);
 
-    const allocations = computeGreedyInitAlloc({
-      vaultDetails,
-      strategyAmounts,
-      allocatableAmount,
-      cashAmount,
-    });
-    expect(allocations[zeroAddress]).toStrictEqual({
-      oldAmount: BigInt(400),
-      newAmount: BigInt(150),
-      diff: BigInt(-250),
-    });
-    expect(allocations['0x1']).toStrictEqual({
-      oldAmount: BigInt(300),
-      newAmount: BigInt(350),
-      diff: BigInt(50),
-    });
-    expect(allocations['0x2']).toStrictEqual({
-      oldAmount: BigInt(500),
-      newAmount: BigInt(700),
-      diff: BigInt(200),
-    });
-  });
-  it('not enough cash in 2nd vault but enough in 1st to offset', () => {
-    const vaultDetails = {
-      '0x1': {
-        ...defaultVaultProps,
-        vault: '0x1',
-        supplyAPY: 0.1,
-        rewardAPY: 0.1,
-        supplyCap: BigInt(6050),
-        cash: BigInt(100),
-        totalBorrows: BigInt(3000),
-      },
-      '0x2': {
-        ...defaultVaultProps,
-        vault: '0x2',
-        supplyAPY: 0.2,
-        rewardAPY: 0.2,
-        supplyCap: BigInt(12000),
-        cash: BigInt(9000),
-        totalBorrows: BigInt(1000),
-      },
-    };
-    const strategyAmounts = {
-      [zeroAddress]: BigInt(100),
-      '0x1': BigInt(300),
-      '0x2': BigInt(500),
-    };
-    const allocatableAmount = BigInt(800);
-    const cashAmount = BigInt(100);
-
-    const allocations = computeGreedyInitAlloc({
-      vaultDetails,
-      strategyAmounts,
-      allocatableAmount,
-      cashAmount,
-    });
-    expect(allocations[zeroAddress]).toStrictEqual({
-      oldAmount: BigInt(100),
-      newAmount: BigInt(100),
-      diff: BigInt(0),
-    });
-    expect(allocations['0x1']).toStrictEqual({
-      oldAmount: BigInt(300),
-      newAmount: BigInt(200),
-      diff: BigInt(-100),
-    });
-    expect(allocations['0x2']).toStrictEqual({
-      oldAmount: BigInt(500),
-      newAmount: BigInt(600),
-      diff: BigInt(100),
-    });
-  });
-  it('not enough cash in both vaults, cashAmount is decreased', () => {
-    const vaultDetails = {
-      '0x1': {
-        ...defaultVaultProps,
-        vault: '0x1',
-        supplyAPY: 0.1,
-        rewardAPY: 0.1,
-        supplyCap: BigInt(6050),
-        cash: BigInt(100),
-        totalBorrows: BigInt(3000),
-      },
-      '0x2': {
-        ...defaultVaultProps,
-        vault: '0x2',
-        supplyAPY: 0.2,
-        rewardAPY: 0.2,
-        supplyCap: BigInt(12000),
-        cash: BigInt(9000),
-        totalBorrows: BigInt(1000),
-      },
-    };
-    const strategyAmounts = {
-      [zeroAddress]: BigInt(30),
-      '0x1': BigInt(300),
-      '0x2': BigInt(500),
-    };
-    const allocatableAmount = BigInt(680);
-    const cashAmount = BigInt(150);
-
-    const allocations = computeGreedyInitAlloc({
-      vaultDetails,
-      strategyAmounts,
-      allocatableAmount,
-      cashAmount,
-    });
-    expect(allocations[zeroAddress]).toStrictEqual({
-      oldAmount: BigInt(30),
-      newAmount: BigInt(130),
-      diff: BigInt(100),
-    });
-    expect(allocations['0x1']).toStrictEqual({
-      oldAmount: BigInt(300),
-      newAmount: BigInt(200),
-      diff: BigInt(-100),
-    });
-    expect(allocations['0x2']).toStrictEqual({
-      oldAmount: BigInt(500),
-      newAmount: BigInt(500),
-      diff: BigInt(0),
-    });
+    expect(serializeAllocation(allocations)).toEqual(
+      serializeAllocation({
+        [zeroAddress]: { oldAmount: 400n, newAmount: 100n, diff: -300n },
+        '0x0000000000000000000000000000000000000001': {
+          oldAmount: 500n,
+          newAmount: 600n,
+          diff: 100n,
+        },
+        '0x0000000000000000000000000000000000000002': {
+          oldAmount: 300n,
+          newAmount: 500n,
+          diff: 200n,
+        },
+      }),
+    );
   });
 });
