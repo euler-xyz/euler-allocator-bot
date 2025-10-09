@@ -1,5 +1,4 @@
-import { type PrismaClient } from '@prisma/client';
-import { zeroAddress } from 'viem';
+import { PublicClient, zeroAddress } from 'viem';
 import { getEulerRewardCampigns } from '../../../src/utils/euler/getEulerRewardCampigns';
 
 jest.mock('@/utils/notifications/telegram', () => {
@@ -29,14 +28,7 @@ jest.mock('@/utils/common/getTokenPrice', () => {
 describe('getEulerRewardCampaigns', () => {
   const chainId = 1;
 
-  const mockPrismaClient = {
-    eulerBalanceOf: {
-      findFirst: jest.fn(),
-    },
-    eulerVaultDetails: {
-      findFirst: jest.fn(),
-    },
-  } as unknown as PrismaClient;
+  const mockRpcClient = {} as unknown as PublicClient;
 
   const mockMerklData = {
     amount: '100000000000000000000',
@@ -65,6 +57,7 @@ describe('getEulerRewardCampaigns', () => {
 
   it('case - chain not found', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve([]),
     });
 
@@ -74,13 +67,14 @@ describe('getEulerRewardCampaigns', () => {
       cash: BigInt(0),
       totalBorrows: BigInt(0),
       totalShares: BigInt(0),
-      prismaClient: mockPrismaClient,
+      rpcClient: mockRpcClient,
     });
     expect(result).toEqual([]);
   });
 
   it('case - parse error', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
       json: () =>
         Promise.resolve([
           {
@@ -97,13 +91,14 @@ describe('getEulerRewardCampaigns', () => {
         cash: BigInt(0),
         totalBorrows: BigInt(0),
         totalShares: BigInt(0),
-        prismaClient: mockPrismaClient,
+        rpcClient: mockRpcClient,
       }),
     ).rejects.toThrow();
   });
 
   it('case - normal', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
       json: () =>
         Promise.resolve([
           {
@@ -149,12 +144,17 @@ describe('getEulerRewardCampaigns', () => {
       cash: BigInt(0),
       totalBorrows: BigInt(0),
       totalShares: BigInt(0),
-      prismaClient: mockPrismaClient,
+      rpcClient: mockRpcClient,
     });
-    expect(result).toEqual([
+    expect(
+      result.map(campaign => ({
+        ...campaign,
+        blacklistedSupply: campaign.blacklistedSupply.toString(),
+      })),
+    ).toEqual([
       {
         dailyReward: 6480,
-        blacklistedSupply: BigInt(200),
+        blacklistedSupply: '200',
       },
     ]);
   });

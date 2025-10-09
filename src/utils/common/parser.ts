@@ -1,6 +1,9 @@
 import { addressSchema, privateKeySchema, strategyConstantsSchema } from '@/types/types';
-import { type Decimal } from '@prisma/client/runtime';
 import { formatUnits, getAddress, parseUnits, type Address, type Hex } from 'viem';
+
+type FixedPointLike = {
+  toFixed: (digits?: number) => string;
+};
 
 /**
  * @notice Helper function to parse and validate environment variables
@@ -16,17 +19,17 @@ export function parseEnvVar(varValue?: string, name?: string): string {
 }
 
 /**
- * @notice Converts a Prisma Decimal value to a JavaScript BigInt
- * @param decimalValue - The decimal value to convert
+ * @notice Converts a fixed-point value to a JavaScript BigInt
+ * @param decimalValue - The fixed-point value to convert
  * @returns The decimal value as a BigInt
  */
-export function parseDecimalToBigInt(decimalValue: Decimal) {
+export function parseDecimalToBigInt(decimalValue: FixedPointLike) {
   return BigInt(decimalValue.toFixed(0));
 }
 
 /**
  * @notice Parses a list of strategies into an array of objects with protocol and vault address
- * @dev This ensures that the vault address is in lower case and only supported protocols can be passed
+ * @dev This ensures that the vault address is checksum encoded and only supported protocols can be passed
  * @param strategies - The list of strategies to parse
  * @returns An array of objects with protocol and vault address
  */
@@ -41,7 +44,7 @@ export function parseStrategies(strategies?: string[]) {
 }
 
 /**
- * @notice Converts a contract address string to lowercase and types it as an Address
+ * @notice Normalizes a contract address and returns it typed as an Address
  * @param contractAddress The contract address string to parse
  * @returns Checksum encoded address
  */

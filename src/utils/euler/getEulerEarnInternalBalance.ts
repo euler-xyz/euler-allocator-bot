@@ -1,8 +1,5 @@
 import { EulerEarnAbi } from '@/constants/EulerEarnAbi';
-import { EvkAbi } from '@/constants/EvkAbi';
-import { parseDecimalToBigInt } from '@/utils/common/parser';
 import { convertEulerSharesToAssets } from '@/utils/euler/resolveEulerUnits';
-import { type PrismaClient } from '@prisma/client';
 import { PublicClient, type Address } from 'viem';
 
 /**
