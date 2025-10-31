@@ -4,6 +4,7 @@ import {
   parsePrivateKey,
   parseSoftCaps,
   parseStrategies,
+  resolveOptimizationMode,
 } from '@/utils/common/parser';
 import dotenv from 'dotenv';
 
@@ -29,6 +30,10 @@ const ENV = {
   MAX_STRATEGY_APY_DIFF: Number(
     parseEnvVar(process.env.MAX_STRATEGY_APY_DIFF, 'MAX_STRATEGY_APY_DIFF'),
   ),
+  /** @notice Optimization mode the allocator should run (annealing, equalization, combined) */
+  OPTIMIZATION_MODE: resolveOptimizationMode(process.env.OPTIMIZATION_MODE),
+  /** @notice Target maximum APY spread after equalization (percentage, e.g. "3" means 3%). Only used when equalization runs */
+  APY_SPREAD_TOLERANCE: Number(process.env.APY_SPREAD_TOLERANCE || 0),
   /** @notice ID of the blockchain network */
   CHAIN_ID: Number(parseEnvVar(process.env.CHAIN_ID, 'CHAIN_ID')),
   /** @notice Address of the earn vault */

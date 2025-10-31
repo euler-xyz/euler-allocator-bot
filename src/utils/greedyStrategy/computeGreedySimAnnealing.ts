@@ -323,7 +323,7 @@ export const isMinAllocation = (strategy: Address, allocation: Allocation) => {
   const res =
     ENV.SOFT_CAPS[strategy]?.min &&
     ((allocation[strategy].newAmount - ENV.SOFT_CAPS[strategy].min) * 100n) /
-    ENV.SOFT_CAPS[strategy].min >
-    PERCENT_TOLERANCE;
+      ENV.SOFT_CAPS[strategy].min >
+      PERCENT_TOLERANCE;
   return Boolean(res);
 };

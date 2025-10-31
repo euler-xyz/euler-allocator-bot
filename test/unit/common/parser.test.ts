@@ -1,13 +1,15 @@
+import { getAddress } from 'viem';
 import {
   parseBigIntToNumberWithScale,
   parseContractAddress,
   parseDecimalToBigInt,
   parseEnvVar,
   parseNumberToBigIntWithScale,
+  parseOptimizationMode,
   parsePrivateKey,
   parseStrategies,
+  resolveOptimizationMode,
 } from '../../../src/utils/common/parser';
-import { getAddress } from 'viem';
 
 describe('common utils', () => {
   describe('parseEnvVar', () => {
@@ -69,6 +71,27 @@ describe('common utils', () => {
     });
     it('should throw error for invalid address', () => {
       expect(() => parseStrategies(['euler:1234567890abcdef1234567890abcdef12345678'])).toThrow();
+    });
+  });
+
+  describe('parseOptimizationMode', () => {
+    it('parses supported modes case-insensitively', () => {
+      expect(parseOptimizationMode('annealing')).toBe('annealing');
+      expect(parseOptimizationMode('EQUALIZATION')).toBe('equalization');
+    });
+
+    it('throws for unsupported modes', () => {
+      expect(() => parseOptimizationMode('invalid-mode')).toThrow();
+    });
+  });
+
+  describe('resolveOptimizationMode', () => {
+    it('returns default when value is undefined', () => {
+      expect(resolveOptimizationMode(undefined, 'annealing')).toBe('annealing');
+    });
+
+    it('parses provided value when defined', () => {
+      expect(resolveOptimizationMode('combined')).toBe('combined');
     });
   });
 

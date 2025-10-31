@@ -42,16 +42,16 @@ export async function getEulerRewardCampigns({
     `https://api.merkl.xyz/v4/campaigns/?chainId=${chainId}&type=EULER`,
     { signal: AbortSignal.timeout(15000) }, // TODO config
   );
-  let data: MerklData[] = []
-  let errorMessage
+  let data: MerklData[] = [];
+  let errorMessage;
   if (response.ok) {
     try {
       data = await response.json();
       if (!data.length) {
-        errorMessage = `Error\nNo Merkl data found for chainId: ${chainId}`
+        errorMessage = `Error\nNo Merkl data found for chainId: ${chainId}`;
       }
     } catch {
-      errorMessage = `Error parsing response, ${await response.text()}`
+      errorMessage = `Error parsing response, ${await response.text()}`;
     }
   }
 
