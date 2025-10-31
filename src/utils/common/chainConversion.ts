@@ -1,5 +1,5 @@
 import { defineChain } from 'viem';
-import { arbitrum, base, mainnet } from 'viem/chains';
+import { arbitrum, base, mainnet, bsc } from 'viem/chains';
 
 export const plasma = defineChain({
   id: 9745,
@@ -38,6 +38,8 @@ export function getChain(chainId: number) {
   switch (chainId) {
     case 1:
       return mainnet;
+    case 56:
+      return bsc;
     case 8453:
       return base;
     case 42161:
@@ -59,10 +61,14 @@ export function getChainName(chainId: number) {
   switch (chainId) {
     case 1:
       return 'mainnet';
+    case 56:
+      return 'bsc';
     case 8453:
       return 'base';
     case 42161:
       return 'arbitrum';
+    case 9745:
+      return 'plasma';
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
@@ -78,10 +84,14 @@ export function getChainNameDefiLlama(chainId: number) {
   switch (chainId) {
     case 1:
       return 'ethereum';
+    case 56:
+      return 'bsc';
     case 8453:
       return 'base';
     case 42161:
       return 'arbitrum';
+    case 9745:
+      return 'plasma';
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }

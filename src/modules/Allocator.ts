@@ -44,6 +44,7 @@ type AllocationContext = {
   cashAmount: bigint;
   requiresSpreadCheck: boolean;
   currentSpread?: number;
+  mode: OptimizationMode;
 };
 
 type OptimizationOutcome = {
@@ -222,7 +223,7 @@ class Allocator {
     currentReturnsDetails: ReturnsDetails,
     newReturns: number,
     newReturnsDetails: ReturnsDetails,
-    spreads?: { currentSpread?: number; finalSpread?: number },
+    spreads?: { current?: number; final?: number },
   ) {
     /** Check if all assets are allocated */
     if (checkAllocationTotals(vault, finalAllocation)) {
@@ -234,8 +235,7 @@ class Allocator {
       !isFullyOverUtilized(currentReturnsDetails) &&
       isOverUtilized(newReturnsDetails)
     ) {
-      // throw new Error('Over-utilization unresolved');
-      return false
+      throw new Error('Over-utilization unresolved');
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
@@ -245,12 +245,12 @@ class Allocator {
     const requiresSpreadCheck = this.optimizationMode !== 'annealing';
     const meetsSpreadTolerance = (() => {
       if (!requiresSpreadCheck) return true;
-      const finalSpread = spreads?.finalSpread;
+      const finalSpread = spreads?.final;
       if (finalSpread === undefined) return false;
       if (this.apySpreadTolerance > 0) {
         return finalSpread <= this.apySpreadTolerance;
       }
-      const currentSpread = spreads?.currentSpread;
+      const currentSpread = spreads?.current;
       if (currentSpread === undefined) return true;
       return finalSpread + APY_SPREAD_EPSILON < currentSpread;
     })();
@@ -309,6 +309,7 @@ class Allocator {
       cashAmount,
       requiresSpreadCheck,
       currentSpread,
+      mode: this.optimizationMode,
     };
   }
 
@@ -376,8 +377,12 @@ class Allocator {
         }))
       : undefined;
 
-    const spreads = context.requiresSpreadCheck
-      ? { currentSpread: context.currentSpread, finalSpread }
+    const spreadSummary = context.requiresSpreadCheck
+      ? {
+          current: context.currentSpread,
+          final: finalSpread,
+          tolerance: this.apySpreadTolerance || undefined,
+        }
       : undefined;
 
     const allocationVerified = await this.verifyAllocation(
@@ -388,7 +393,7 @@ class Allocator {
       context.currentReturnsDetails,
       outcome.finalReturns,
       outcome.finalReturnsDetails,
-      spreads,
+      spreadSummary ? { current: spreadSummary.current, final: spreadSummary.final } : undefined,
     );
 
     const runLog = getRunLog(
@@ -400,6 +405,8 @@ class Allocator {
       outcome.finalReturnsDetails,
       context.allocatableAmount,
       context.cashAmount,
+      context.mode,
+      spreadSummary,
     );
 
     if (!allocationVerified) {

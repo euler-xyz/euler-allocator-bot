@@ -20,6 +20,8 @@ export function getRunLog(
   finalReturnsDetails: ReturnsDetails,
   allocatableAmount: bigint,
   cashAmount: bigint,
+  mode: RunLog['mode'],
+  spreadSummary?: RunLog['spreadSummary'],
 ): RunLog {
   return {
     current: {
@@ -34,5 +36,7 @@ export function getRunLog(
       returnsTotal: finalReturns,
       returnsDetails: finalReturnsDetails,
     },
+    mode,
+    spreadSummary,
   };
 }
