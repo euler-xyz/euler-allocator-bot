@@ -4,19 +4,74 @@ import { logger } from '../common/log';
 import { sendSlackMessage } from './slack';
 import { sendTelegramMessage } from './telegram';
 
-const stringify = (obj: any) =>
-  JSON.stringify(obj, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+const formatPercent = (value?: number, digits = 3) =>
+  value === undefined ? 'n/a' : `${value.toFixed(digits)}%`;
+
+const formatDelta = (current: number, next: number) => {
+  const delta = next - current;
+  const prefix = delta >= 0 ? '+' : '';
+  return `${prefix}${delta.toFixed(3)}%`;
+};
+
+const formatSpreadSummary = (runLog: RunLog) => {
+  const spread = runLog.spreadSummary;
+  if (!spread) return undefined;
+
+  const current = spread.current !== undefined ? formatPercent(spread.current, 3) : undefined;
+  const final = spread.final !== undefined ? formatPercent(spread.final, 3) : undefined;
+
+  if (!current && !final) return undefined;
+
+  const tolerancePart = spread.tolerance !== undefined ? ` (limit ${formatPercent(spread.tolerance, 3)})` : '';
+
+  if (current && final) return `Spread ${current} → ${final}${tolerancePart}`;
+  return `Spread ${current ?? final}${tolerancePart}`;
+};
 
 export async function notifyRun(runLog: RunLog) {
-  if (runLog.result?.startsWith('0x')) {
-    const message = `Rebalance executed, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, APY ${runLog.current.returnsTotal.toFixed(3)} => ${runLog.new.returnsTotal.toFixed(3)} tx ${runLog.result}`;
-    return sendNotifications({ message, type: 'info' });
-  } else if (runLog.result === 'error') {
+  const apySummary = `APY ${formatPercent(runLog.current.returnsTotal)} → ${formatPercent(
+    runLog.new.returnsTotal,
+  )} (${formatDelta(runLog.current.returnsTotal, runLog.new.returnsTotal)})`;
+
+  const spreadSummary = formatSpreadSummary(runLog);
+
+  if (runLog.result === 'error') {
     const errorMessage =
       runLog.error instanceof Error ? runLog.error.message : String(runLog.error);
-    const message = `Rebalance ERROR, chain ${ENV.CHAIN_ID}, vault ${ENV.EARN_VAULT_ADDRESS}, Error: ${errorMessage}`;
+    const message = [
+      `Rebalance ERROR (mode: ${runLog.mode})`,
+      `chain ${ENV.CHAIN_ID} vault ${ENV.EARN_VAULT_ADDRESS}`,
+      apySummary,
+      spreadSummary,
+      `Error: ${errorMessage}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
     return sendNotifications({ message, type: 'error' });
   }
+
+  const resultLabel = (() => {
+    if (!runLog.result) return 'status unknown';
+    if (runLog.result.startsWith('0x')) return 'broadcast';
+    if (runLog.result === 'simulation') return 'simulation';
+    if (runLog.result === 'abort') return 'skipped';
+    return runLog.result;
+  })();
+
+  const txLine = runLog.result?.startsWith('0x') ? `tx ${runLog.result}` : undefined;
+
+  const message = [
+    `Rebalance ${resultLabel.toUpperCase()} (mode: ${runLog.mode})`,
+    `chain ${ENV.CHAIN_ID} vault ${ENV.EARN_VAULT_ADDRESS}`,
+    apySummary,
+    spreadSummary,
+    txLine,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return sendNotifications({ message, type: 'info' });
 }
 export async function sendNotifications({
   message,

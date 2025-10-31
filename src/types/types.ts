@@ -140,6 +140,12 @@ export type RunLog = {
     returnsTotal: number;
     returnsDetails: ReturnsDetails;
   };
+  mode: OptimizationMode;
+  spreadSummary?: {
+    current?: number;
+    final?: number;
+    tolerance?: number;
+  };
   result?: 'abort' | 'simulation' | 'error' | Hash;
   error?: unknown;
 };

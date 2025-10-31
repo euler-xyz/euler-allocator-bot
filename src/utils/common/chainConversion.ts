@@ -1,33 +1,5 @@
 import { defineChain } from 'viem';
-import { arbitrum, base, mainnet } from 'viem/chains';
-import { defineChain } from 'viem';
-
-export const plasma = defineChain({
-  id: 9745,
-  name: "Plasma",
-  nativeCurrency: {
-    decimals: 18,
-    name: "XPL",
-    symbol: "XPL",
-  },
-  blockExplorers: {
-    default: {
-      name: "Plasma Explorer",
-      url: "https://plasmascan.to/",
-    },
-  },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.plasma.to"],
-    },
-  },
-  contracts: {
-    multicall3: {
-      address: "0xcA11bde05977b3631167028862bE2a173976CA11",
-      blockCreated: 0,
-    },
-  },
-} as const)
+import { arbitrum, base, mainnet, bsc } from 'viem/chains';
 
 export const plasma = defineChain({
   id: 9745,
@@ -66,6 +38,8 @@ export function getChain(chainId: number) {
   switch (chainId) {
     case 1:
       return mainnet;
+    case 56:
+      return bsc;
     case 8453:
       return base;
     case 42161:
@@ -87,6 +61,8 @@ export function getChainName(chainId: number) {
   switch (chainId) {
     case 1:
       return 'mainnet';
+    case 56:
+      return 'bsc';
     case 8453:
       return 'base';
     case 42161:
@@ -108,6 +84,8 @@ export function getChainNameDefiLlama(chainId: number) {
   switch (chainId) {
     case 1:
       return 'ethereum';
+    case 56:
+      return 'bsc';
     case 8453:
       return 'base';
     case 42161:
