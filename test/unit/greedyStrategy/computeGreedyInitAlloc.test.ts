@@ -183,4 +183,41 @@ describe('computeGreedyInitAlloc', () => {
       }),
     );
   });
+
+  it('throws when cash reserve is requested without an idle vault', () => {
+    const originalVault = createVault(
+      [
+        {
+          address: '0x0000000000000000000000000000000000000001' as Address,
+          supplyAPY: 0.1,
+          rewardAPY: 0.1,
+          supplyCap: 10_000n,
+          cash: 3_000n,
+          totalBorrows: 3_000n,
+          allocation: 300n,
+        },
+      ],
+      0n,
+    );
+
+    const strategies = Object.fromEntries(
+      Object.entries(originalVault.strategies).filter(([address]) => address !== zeroAddress),
+    );
+    const vaultWithoutIdle: Parameters<typeof computeGreedyInitAlloc>[0]['vault'] = {
+      ...originalVault,
+      strategies: strategies as typeof originalVault.strategies,
+      initialAllocationQueue: originalVault.initialAllocationQueue.filter(
+        (address: Address) => address !== zeroAddress,
+      ),
+      idleVaultAddress: undefined,
+    };
+
+    expect(() =>
+      computeGreedyInitAlloc({
+        vault: vaultWithoutIdle,
+        allocatableAmount: 300n,
+        cashAmount: 100n,
+      }),
+    ).toThrow('Cash reserve requested but idle vault is disabled');
+  });
 });

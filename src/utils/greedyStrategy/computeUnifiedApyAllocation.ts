@@ -35,9 +35,10 @@ const combineApy = (returns: ReturnsDetails[Address]) => returns.interestAPY + r
 
 const buildAllowedStrategies = (vault: EulerEarn) =>
   new Set(
-    vault.initialAllocationQueue.filter(
-      strategy => !isAddressEqual(strategy, vault.idleVaultAddress),
-    ),
+    vault.initialAllocationQueue.filter(strategy => {
+      if (!vault.idleVaultAddress) return true;
+      return !isAddressEqual(strategy, vault.idleVaultAddress);
+    }),
   );
 
 const computeSpread = (

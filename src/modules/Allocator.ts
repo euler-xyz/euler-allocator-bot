@@ -31,7 +31,7 @@ import {
   computeUnifiedApyAllocation,
 } from '@/utils/greedyStrategy/computeUnifiedApyAllocation';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
-import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
+import { type Address, type Hex, type PublicClient } from 'viem';
 
 const APY_SPREAD_EPSILON = 1e-6;
 
@@ -72,6 +72,7 @@ class Allocator {
   private broadcast: boolean;
   private optimizationMode: OptimizationMode;
   private apySpreadTolerance: number;
+  private noIdleVault: boolean;
 
   /**
    * @notice Creates a new Allocator instance
@@ -90,6 +91,7 @@ class Allocator {
     broadcast,
     optimizationMode,
     apySpreadTolerance,
+    noIdleVault,
   }: {
     allocationDiffTolerance: number;
     allocatorPrivateKey: Hex;
@@ -104,6 +106,7 @@ class Allocator {
     broadcast: boolean;
     optimizationMode: OptimizationMode;
     apySpreadTolerance: number;
+    noIdleVault: boolean;
   }) {
     this.allocationDiffTolerance = allocationDiffTolerance;
     this.allocatorPrivateKey = allocatorPrivateKey;
@@ -118,6 +121,7 @@ class Allocator {
     this.broadcast = broadcast;
     this.optimizationMode = optimizationMode;
     this.apySpreadTolerance = apySpreadTolerance;
+    this.noIdleVault = noIdleVault;
   }
 
   /**
@@ -162,6 +166,10 @@ class Allocator {
       }),
     ).then(results => Object.fromEntries(results.filter(entry => entry !== undefined)));
 
+    const discoveredIdleVault =
+      lensData.supplyQueue.length > 0 ? (lensData.supplyQueue.at(-1) as Address) : undefined;
+    const idleVaultAddress = this.noIdleVault ? undefined : discoveredIdleVault;
+
     const config: EulerEarn = {
       strategies: Object.fromEntries(
         lensData.strategies.map(strategy => {
@@ -175,12 +183,12 @@ class Allocator {
           ];
         }),
       ),
-      idleVaultAddress: (lensData.supplyQueue.length > 0
-        ? lensData.supplyQueue.at(-1)
-        : zeroAddress) as Address,
       initialAllocationQueue: [...lensData.strategies].reverse().map(s => s.strategy),
       assetDecimals: Number(lensData.assetDecimals),
     };
+    if (idleVaultAddress) {
+      config.idleVaultAddress = idleVaultAddress;
+    }
 
     if (this.strategiesOverride) {
       this.strategiesOverride.forEach(s => {

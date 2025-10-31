@@ -83,7 +83,7 @@ export async function executeRebalance({
       if (gas * gasPrice > ENV.MAX_GAS_COST) {
         return 'abort';
       }
-    } catch {} // some rpc providers don't support estimateGas method
+    } catch { } // some rpc providers don't support estimateGas method
   }
 
   if (broadcast) {

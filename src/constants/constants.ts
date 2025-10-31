@@ -26,6 +26,8 @@ const ENV = {
   ),
   /** @notice Percentage of total assets to keep as cash reserve in idle (non-borrowable) vault (18 decimal fixed point) */
   CASH_PERCENTAGE: BigInt(parseEnvVar(process.env.CASH_PERCENTAGE, 'CASH_PERCENTAGE')),
+  /** @notice Optional flag to disable idle vault usage entirely */
+  NO_IDLE_VAULT: (process.env.NO_IDLE_VAULT || 'false').toLowerCase() === 'true',
   /** @notice Max difference in APY between strategies, (percentage, e.g. "3" means 3%) */
   MAX_STRATEGY_APY_DIFF: Number(
     parseEnvVar(process.env.MAX_STRATEGY_APY_DIFF, 'MAX_STRATEGY_APY_DIFF'),

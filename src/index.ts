@@ -57,6 +57,7 @@ const allocator = new Allocator({
   rpcClient,
   optimizationMode,
   apySpreadTolerance: ENV.APY_SPREAD_TOLERANCE,
+  noIdleVault: ENV.NO_IDLE_VAULT,
 });
 
 async function main() {

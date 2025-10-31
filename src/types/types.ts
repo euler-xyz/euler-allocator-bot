@@ -114,7 +114,7 @@ export type EulerEarn = {
       details: StrategyDetails;
     };
   };
-  idleVaultAddress: Address;
+  idleVaultAddress?: Address;
   assetDecimals: number;
   initialAllocationQueue: Address[];
 };

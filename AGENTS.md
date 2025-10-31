@@ -36,6 +36,7 @@ Parsed in `src/constants/constants.ts` (required unless noted):
 - `ALLOCATION_DIFF_TOLERANCE` (number %) – minimal APY improvement to execute a rebalance.
 - `ALLOCATOR_PRIVATE_KEY` (hex) – signer for EVC batch; required even when simulating.
 - `CASH_PERCENTAGE` (bigint 18-dec) – cash reserve kept in idle vault.
+- `NO_IDLE_VAULT` (`true`/`false`, default `false`) – set to `true` when the strategy set has no idle vault; requires `CASH_PERCENTAGE = 0`.
 - `MAX_STRATEGY_APY_DIFF` (number %) – optional cap on cross-strategy APY spread during annealing.
 - `OPTIMIZATION_MODE` (`annealing` | `equalization` | `combined`, default `combined`) – selects which optimization pipeline the allocator executes; CLI `--mode/--optimizer/--strategy` overrides this at runtime.
 - `APY_SPREAD_TOLERANCE` (number %) – target ceiling for the APY spread when equalization is enabled; if omitted, any strictly tighter spread is accepted.
@@ -78,4 +79,4 @@ TypeScript paths come from `tsconfig.json` (`@/*` alias), and Jest mirrors that 
 ## Operational Notes
 - `docker-compose.yml` wires container env vars; some keys (e.g., `DATABASE_URL`, `STRATEGIES`) look legacy—ensure they match the current constants file before relying on them.
 - The allocator loops via `setTimeout(main, INTERVAL_TIME)`; crashing errors are logged and surfaced through notifications before the next iteration.
-- Strategy overrides must include the idle vault when `CASH_PERCENTAGE > 0` to keep cash handling intact.
+- Strategy overrides must include the idle vault when `CASH_PERCENTAGE > 0` and `NO_IDLE_VAULT` is `false` to keep cash handling intact.
