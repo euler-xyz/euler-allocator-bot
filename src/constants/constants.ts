@@ -4,6 +4,7 @@ import {
   parsePrivateKey,
   parseSoftCaps,
   parseStrategies,
+  resolveOptimizationMode,
 } from '@/utils/common/parser';
 import dotenv from 'dotenv';
 
@@ -25,10 +26,16 @@ const ENV = {
   ),
   /** @notice Percentage of total assets to keep as cash reserve in idle (non-borrowable) vault (18 decimal fixed point) */
   CASH_PERCENTAGE: BigInt(parseEnvVar(process.env.CASH_PERCENTAGE, 'CASH_PERCENTAGE')),
+  /** @notice Optional flag to disable idle vault usage entirely */
+  NO_IDLE_VAULT: (process.env.NO_IDLE_VAULT || 'false').toLowerCase() === 'true',
   /** @notice Max difference in APY between strategies, (percentage, e.g. "3" means 3%) */
   MAX_STRATEGY_APY_DIFF: Number(
     parseEnvVar(process.env.MAX_STRATEGY_APY_DIFF, 'MAX_STRATEGY_APY_DIFF'),
   ),
+  /** @notice Optimization mode the allocator should run (annealing, equalization, combined) */
+  OPTIMIZATION_MODE: resolveOptimizationMode(process.env.OPTIMIZATION_MODE),
+  /** @notice Target maximum APY spread after equalization (percentage, e.g. "3" means 3%). Only used when equalization runs */
+  APY_SPREAD_TOLERANCE: Number(process.env.APY_SPREAD_TOLERANCE || 0),
   /** @notice ID of the blockchain network */
   CHAIN_ID: Number(parseEnvVar(process.env.CHAIN_ID, 'CHAIN_ID')),
   /** @notice Address of the earn vault */

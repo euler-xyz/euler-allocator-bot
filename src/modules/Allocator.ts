@@ -2,6 +2,7 @@ import { EulerEarnVaultLensAbi } from '@/constants/EulerEarnVaultLensAbi';
 import {
   Allocation,
   EulerEarn,
+  OptimizationMode,
   protocolSchema,
   ReturnsDetails,
   type StrategyConstants,
@@ -25,8 +26,33 @@ import {
   isOutsideSoftCap,
   isOverUtilized,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
+import {
+  calculateApySpread,
+  computeUnifiedApyAllocation,
+} from '@/utils/greedyStrategy/computeUnifiedApyAllocation';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
-import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
+import { type Address, type Hex, type PublicClient } from 'viem';
+
+const APY_SPREAD_EPSILON = 1e-6;
+
+type AllocationContext = {
+  vault: EulerEarn;
+  currentAllocation: Allocation;
+  currentReturns: number;
+  currentReturnsDetails: ReturnsDetails;
+  allocatableAmount: bigint;
+  cashAmount: bigint;
+  requiresSpreadCheck: boolean;
+  currentSpread?: number;
+  mode: OptimizationMode;
+};
+
+type OptimizationOutcome = {
+  finalAllocation: Allocation;
+  finalReturns: number;
+  finalReturnsDetails: ReturnsDetails;
+  finalSpread?: number;
+};
 
 /**
  * @title Allocator
@@ -44,6 +70,9 @@ class Allocator {
   private strategiesOverride?: StrategyConstants[];
   private rpcClient: PublicClient;
   private broadcast: boolean;
+  private optimizationMode: OptimizationMode;
+  private apySpreadTolerance: number;
+  private noIdleVault: boolean;
 
   /**
    * @notice Creates a new Allocator instance
@@ -60,6 +89,9 @@ class Allocator {
     strategiesOverride,
     rpcClient,
     broadcast,
+    optimizationMode,
+    apySpreadTolerance,
+    noIdleVault,
   }: {
     allocationDiffTolerance: number;
     allocatorPrivateKey: Hex;
@@ -72,6 +104,9 @@ class Allocator {
     strategiesOverride?: StrategyConstants[];
     rpcClient: PublicClient;
     broadcast: boolean;
+    optimizationMode: OptimizationMode;
+    apySpreadTolerance: number;
+    noIdleVault: boolean;
   }) {
     this.allocationDiffTolerance = allocationDiffTolerance;
     this.allocatorPrivateKey = allocatorPrivateKey;
@@ -84,6 +119,9 @@ class Allocator {
     this.strategiesOverride = strategiesOverride;
     this.rpcClient = rpcClient;
     this.broadcast = broadcast;
+    this.optimizationMode = optimizationMode;
+    this.apySpreadTolerance = apySpreadTolerance;
+    this.noIdleVault = noIdleVault;
   }
 
   /**
@@ -128,6 +166,10 @@ class Allocator {
       }),
     ).then(results => Object.fromEntries(results.filter(entry => entry !== undefined)));
 
+    const discoveredIdleVault =
+      lensData.supplyQueue.length > 0 ? (lensData.supplyQueue.at(-1) as Address) : undefined;
+    const idleVaultAddress = this.noIdleVault ? undefined : discoveredIdleVault;
+
     const config: EulerEarn = {
       strategies: Object.fromEntries(
         lensData.strategies.map(strategy => {
@@ -141,12 +183,12 @@ class Allocator {
           ];
         }),
       ),
-      idleVaultAddress: (lensData.supplyQueue.length > 0
-        ? lensData.supplyQueue.at(-1)
-        : zeroAddress) as Address,
       initialAllocationQueue: [...lensData.strategies].reverse().map(s => s.strategy),
       assetDecimals: Number(lensData.assetDecimals),
     };
+    if (idleVaultAddress) {
+      config.idleVaultAddress = idleVaultAddress;
+    }
 
     if (this.strategiesOverride) {
       this.strategiesOverride.forEach(s => {
@@ -189,6 +231,7 @@ class Allocator {
     currentReturnsDetails: ReturnsDetails,
     newReturns: number,
     newReturnsDetails: ReturnsDetails,
+    spreads?: { current?: number; final?: number },
   ) {
     /** Check if all assets are allocated */
     if (checkAllocationTotals(vault, finalAllocation)) {
@@ -200,78 +243,186 @@ class Allocator {
       !isFullyOverUtilized(currentReturnsDetails) &&
       isOverUtilized(newReturnsDetails)
     ) {
-      // throw new Error('Over-utilization unresolved');
-      return false
+      throw new Error('Over-utilization unresolved');
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
     if (isOutsideSoftCap(currentAllocation)) return !isOutsideSoftCap(finalAllocation);
 
-    return newReturns - currentReturns >= this.allocationDiffTolerance;
+    const meetsReturnTolerance = newReturns - currentReturns >= this.allocationDiffTolerance;
+    const requiresSpreadCheck = this.optimizationMode !== 'annealing';
+    const meetsSpreadTolerance = (() => {
+      if (!requiresSpreadCheck) return true;
+      const finalSpread = spreads?.final;
+      if (finalSpread === undefined) return false;
+      if (this.apySpreadTolerance > 0) {
+        return finalSpread <= this.apySpreadTolerance;
+      }
+      const currentSpread = spreads?.current;
+      if (currentSpread === undefined) return true;
+      return finalSpread + APY_SPREAD_EPSILON < currentSpread;
+    })();
+
+    switch (this.optimizationMode) {
+      case 'annealing':
+        return meetsReturnTolerance;
+      case 'equalization':
+        return meetsSpreadTolerance;
+      case 'combined':
+        return meetsReturnTolerance && meetsSpreadTolerance;
+      default:
+        return meetsReturnTolerance;
+    }
   }
 
   /**
    * @notice Computes optimal allocation across configured strategies
    */
   public async computeAllocation() {
-    /** Get EulerEarn configuration and current allocations */
-    const vault = await this.getEulerEarn();
+    const context = await this.buildAllocationContext();
 
-    const currentAllocation = getCurrentAllocation(vault);
-
-    const { totalReturns: currentReturns, details: currentReturnsDetails } = computeGreedyReturns({
-      vault,
-      allocation: currentAllocation,
-    }); // Can change returns computation
-
-    /** Get allocatable amount and cash amount based on target cash reserve percentage */
-    const [allocatableAmount, cashAmount] = this.getAllocatableAmount(vault);
-
-    if (allocatableAmount + cashAmount === BigInt(0)) {
+    if (context.allocatableAmount + context.cashAmount === BigInt(0)) {
       logger.info({ message: 'nothing to allocate' });
       return;
     }
 
-    /** Compute final allocation and returns using simulated annealing */
-    const [finalAllocation] = computeGreedySimAnnealing({
-      vault,
-      initialAllocation: currentAllocation,
-    }); // Can change optimization algo/params/etc
+    const outcome = this.runOptimization(context);
 
-    const { totalReturns: finalReturns, details: finalReturnsDetails } = computeGreedyReturns({
-      vault,
-      allocation: finalAllocation,
-    }); // Can change returns computation
+    await this.finalizeAllocationRun(context, outcome);
+  }
 
-    /** Check if reallocation shouldn't occur */
-    const allocationVerified = await this.verifyAllocation(
+  private async buildAllocationContext(): Promise<AllocationContext> {
+    const vault = await this.getEulerEarn();
+    const currentAllocation = getCurrentAllocation(vault);
+    const { totalReturns: currentReturns, details: currentReturnsDetails } = computeGreedyReturns({
+      vault,
+      allocation: currentAllocation,
+    });
+    const [allocatableAmount, cashAmount] = this.getAllocatableAmount(vault);
+    const requiresSpreadCheck = this.optimizationMode !== 'annealing';
+    const currentSpread = requiresSpreadCheck
+      ? calculateApySpread({
+        vault,
+        allocation: currentAllocation,
+        returnsDetails: currentReturnsDetails,
+      })
+      : undefined;
+
+    return {
       vault,
       currentAllocation,
-      finalAllocation,
       currentReturns,
       currentReturnsDetails,
-      finalReturns,
-      finalReturnsDetails,
+      allocatableAmount,
+      cashAmount,
+      requiresSpreadCheck,
+      currentSpread,
+      mode: this.optimizationMode,
+    };
+  }
+
+  private runOptimization(context: AllocationContext): OptimizationOutcome {
+    const { vault, currentAllocation } = context;
+
+    switch (this.optimizationMode) {
+      case 'annealing': {
+        const [annealedAllocation] = computeGreedySimAnnealing({
+          vault,
+          initialAllocation: currentAllocation,
+        });
+        const annealedReturns = computeGreedyReturns({
+          vault,
+          allocation: annealedAllocation,
+        });
+        return {
+          finalAllocation: annealedAllocation,
+          finalReturns: annealedReturns.totalReturns,
+          finalReturnsDetails: annealedReturns.details,
+        };
+      }
+      case 'equalization': {
+        const equalization = computeUnifiedApyAllocation({
+          vault,
+          initialAllocation: currentAllocation,
+        });
+        return {
+          finalAllocation: equalization.allocation,
+          finalReturns: equalization.totalReturns,
+          finalReturnsDetails: equalization.details,
+          finalSpread: equalization.spread,
+        };
+      }
+      case 'combined':
+      default: {
+        const [annealedAllocation] = computeGreedySimAnnealing({
+          vault,
+          initialAllocation: currentAllocation,
+        });
+        const equalization = computeUnifiedApyAllocation({
+          vault,
+          initialAllocation: annealedAllocation,
+        });
+        return {
+          finalAllocation: equalization.allocation,
+          finalReturns: equalization.totalReturns,
+          finalReturnsDetails: equalization.details,
+          finalSpread: equalization.spread,
+        };
+      }
+    }
+  }
+
+  private async finalizeAllocationRun(
+    context: AllocationContext,
+    outcome: OptimizationOutcome,
+  ): Promise<void> {
+    const finalSpread = context.requiresSpreadCheck
+      ? (outcome.finalSpread ??
+        calculateApySpread({
+          vault: context.vault,
+          allocation: outcome.finalAllocation,
+          returnsDetails: outcome.finalReturnsDetails,
+        }))
+      : undefined;
+
+    const spreadSummary = context.requiresSpreadCheck
+      ? {
+        current: context.currentSpread,
+        final: finalSpread,
+        tolerance: this.apySpreadTolerance || undefined,
+      }
+      : undefined;
+
+    const allocationVerified = await this.verifyAllocation(
+      context.vault,
+      context.currentAllocation,
+      outcome.finalAllocation,
+      context.currentReturns,
+      context.currentReturnsDetails,
+      outcome.finalReturns,
+      outcome.finalReturnsDetails,
+      spreadSummary ? { current: spreadSummary.current, final: spreadSummary.final } : undefined,
     );
 
     const runLog = getRunLog(
-      currentAllocation,
-      currentReturns,
-      currentReturnsDetails,
-      finalAllocation,
-      finalReturns,
-      finalReturnsDetails,
-      allocatableAmount,
-      cashAmount,
+      context.currentAllocation,
+      context.currentReturns,
+      context.currentReturnsDetails,
+      outcome.finalAllocation,
+      outcome.finalReturns,
+      outcome.finalReturnsDetails,
+      context.allocatableAmount,
+      context.cashAmount,
+      context.mode,
+      spreadSummary,
     );
 
     if (!allocationVerified) {
       runLog.result = 'abort';
     } else {
-      /** Execute rebalance */
       try {
         runLog.result = await executeRebalance({
-          allocation: finalAllocation,
+          allocation: outcome.finalAllocation,
           allocatorPrivateKey: this.allocatorPrivateKey,
           earnVaultAddress: this.earnVaultAddress,
           evcAddress: this.evcAddress,

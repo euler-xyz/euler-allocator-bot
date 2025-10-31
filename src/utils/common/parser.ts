@@ -1,4 +1,10 @@
-import { addressSchema, privateKeySchema, strategyConstantsSchema } from '@/types/types';
+import {
+  addressSchema,
+  optimizationModeSchema,
+  privateKeySchema,
+  strategyConstantsSchema,
+  type OptimizationMode,
+} from '@/types/types';
 import { formatUnits, getAddress, parseUnits, type Address, type Hex } from 'viem';
 
 type FixedPointLike = {
@@ -41,6 +47,29 @@ export function parseStrategies(strategies?: string[]) {
       vaultAddress,
     });
   });
+}
+
+/**
+ * @notice Parses a string value into a supported optimization mode
+ * @param value The string value to parse
+ * @returns The parsed optimization mode
+ */
+export function parseOptimizationMode(value: string) {
+  return optimizationModeSchema.parse(value.toLowerCase()) as OptimizationMode;
+}
+
+/**
+ * @notice Resolves an optimization mode using a fallback when the value is undefined
+ * @param value The optional string to parse
+ * @param defaultMode The default mode to return when value is undefined
+ * @returns The resolved optimization mode
+ */
+export function resolveOptimizationMode(
+  value: string | undefined,
+  defaultMode: OptimizationMode = 'combined',
+) {
+  if (!value) return defaultMode;
+  return parseOptimizationMode(value);
 }
 
 /**

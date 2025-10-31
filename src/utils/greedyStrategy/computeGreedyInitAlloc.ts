@@ -90,8 +90,19 @@ export function computeGreedyInitAlloc({
     // handleCornerCases(vaultDetails, allocations, amountLeft);
   }
 
-  allocations[vault.idleVaultAddress].newAmount += cashAmount;
-  allocations[vault.idleVaultAddress].diff += cashAmount;
+  if (cashAmount !== 0n) {
+    if (!vault.idleVaultAddress) {
+      throw new Error('Cash reserve requested but idle vault is disabled');
+    }
+
+    const idleAllocation = allocations[vault.idleVaultAddress];
+    if (!idleAllocation) {
+      throw new Error('Idle vault allocation not found');
+    }
+
+    idleAllocation.newAmount += cashAmount;
+    idleAllocation.diff += cashAmount;
+  }
 
   return allocations;
 }

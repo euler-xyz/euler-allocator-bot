@@ -66,33 +66,33 @@ describe('computeGreedySimAnnealing', () => {
     };
   };
 
-const buildReturns = (value: number, addresses: Address[]) => ({
-  totalReturns: value,
-  details: Object.fromEntries(
-    addresses.map(address => [
-      address,
-      {
-        interestAPY: value,
-        rewardsAPY: 0,
-        utilization: 0.5,
-      },
-    ]),
-  ),
-});
+  const buildReturns = (value: number, addresses: Address[]) => ({
+    totalReturns: value,
+    details: Object.fromEntries(
+      addresses.map(address => [
+        address,
+        {
+          interestAPY: value,
+          rewardsAPY: 0,
+          utilization: 0.5,
+        },
+      ]),
+    ),
+  });
 
-const stringifyAllocation = (
-  allocation: Record<string, { newAmount: bigint; oldAmount: bigint; diff: bigint }>,
-) =>
-  Object.fromEntries(
-    Object.entries(allocation).map(([address, values]) => [
-      address,
-      {
-        newAmount: values.newAmount.toString(),
-        oldAmount: values.oldAmount.toString(),
-        diff: values.diff.toString(),
-      },
-    ]),
-  );
+  const stringifyAllocation = (
+    allocation: Record<string, { newAmount: bigint; oldAmount: bigint; diff: bigint }>,
+  ) =>
+    Object.fromEntries(
+      Object.entries(allocation).map(([address, values]) => [
+        address,
+        {
+          newAmount: values.newAmount.toString(),
+          oldAmount: values.oldAmount.toString(),
+          diff: values.diff.toString(),
+        },
+      ]),
+    );
 
   describe('neighbour generation', () => {
     let randomSpy: jest.SpyInstance<number, []>;

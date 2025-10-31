@@ -189,7 +189,8 @@ const isBetterAllocation = (
   const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
     const low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
+      return (!vault.idleVaultAddress ||
+        !isAddressEqual(strategy as Address, vault.idleVaultAddress)) &&
         !isMinAllocation(getAddress(strategy), newAllocation) &&
         apy < accu
         ? apy
@@ -197,7 +198,8 @@ const isBetterAllocation = (
     }, Infinity);
     const high = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
+      return (!vault.idleVaultAddress ||
+        !isAddressEqual(strategy as Address, vault.idleVaultAddress)) &&
         !isMinAllocation(getAddress(strategy), newAllocation) &&
         apy > accu
         ? apy
@@ -323,7 +325,7 @@ export const isMinAllocation = (strategy: Address, allocation: Allocation) => {
   const res =
     ENV.SOFT_CAPS[strategy]?.min &&
     ((allocation[strategy].newAmount - ENV.SOFT_CAPS[strategy].min) * 100n) /
-    ENV.SOFT_CAPS[strategy].min >
-    PERCENT_TOLERANCE;
+      ENV.SOFT_CAPS[strategy].min >
+      PERCENT_TOLERANCE;
   return Boolean(res);
 };

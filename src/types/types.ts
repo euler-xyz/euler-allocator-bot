@@ -20,6 +20,12 @@ export const privateKeySchema = z.string().toLowerCase().startsWith('0x').length
 export const protocolSchema = z.enum(['euler']);
 
 /**
+ * @notice Available optimization modes for the allocator
+ */
+export const optimizationModeSchema = z.enum(['annealing', 'equalization', 'combined']);
+export type OptimizationMode = z.infer<typeof optimizationModeSchema>;
+
+/**
  * @notice Schema for reward campaign details
  */
 export const rewardCampaignSchema = z.object({
@@ -108,7 +114,7 @@ export type EulerEarn = {
       details: StrategyDetails;
     };
   };
-  idleVaultAddress: Address;
+  idleVaultAddress?: Address;
   assetDecimals: number;
   initialAllocationQueue: Address[];
 };
@@ -133,6 +139,12 @@ export type RunLog = {
     allocation: Allocation;
     returnsTotal: number;
     returnsDetails: ReturnsDetails;
+  };
+  mode: OptimizationMode;
+  spreadSummary?: {
+    current?: number;
+    final?: number;
+    tolerance?: number;
   };
   result?: 'abort' | 'simulation' | 'error' | Hash;
   error?: unknown;
