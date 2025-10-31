@@ -294,10 +294,10 @@ class Allocator {
     const requiresSpreadCheck = this.optimizationMode !== 'annealing';
     const currentSpread = requiresSpreadCheck
       ? calculateApySpread({
-          vault,
-          allocation: currentAllocation,
-          returnsDetails: currentReturnsDetails,
-        })
+        vault,
+        allocation: currentAllocation,
+        returnsDetails: currentReturnsDetails,
+      })
       : undefined;
 
     return {
@@ -379,10 +379,10 @@ class Allocator {
 
     const spreadSummary = context.requiresSpreadCheck
       ? {
-          current: context.currentSpread,
-          final: finalSpread,
-          tolerance: this.apySpreadTolerance || undefined,
-        }
+        current: context.currentSpread,
+        final: finalSpread,
+        tolerance: this.apySpreadTolerance || undefined,
+      }
       : undefined;
 
     const allocationVerified = await this.verifyAllocation(

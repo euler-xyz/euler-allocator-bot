@@ -22,7 +22,8 @@ const formatSpreadSummary = (runLog: RunLog) => {
 
   if (!current && !final) return undefined;
 
-  const tolerancePart = spread.tolerance !== undefined ? ` (limit ${formatPercent(spread.tolerance, 3)})` : '';
+  const tolerancePart =
+    spread.tolerance !== undefined ? ` (limit ${formatPercent(spread.tolerance, 3)})` : '';
 
   if (current && final) return `Spread ${current} → ${final}${tolerancePart}`;
   return `Spread ${current ?? final}${tolerancePart}`;

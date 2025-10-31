@@ -1,5 +1,5 @@
 import { defineChain } from 'viem';
-import { arbitrum, base, mainnet, bsc } from 'viem/chains';
+import { arbitrum, base, bsc, mainnet } from 'viem/chains';
 
 export const plasma = defineChain({
   id: 9745,
