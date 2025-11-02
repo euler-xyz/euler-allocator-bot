@@ -1,7 +1,7 @@
 import { logger } from '@/utils/common/log';
-import { getAddress, type Address } from 'viem';
-import path from 'node:path';
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { getAddress, type Address } from 'viem';
 
 type VaultLabelMetadata = {
   name?: string;

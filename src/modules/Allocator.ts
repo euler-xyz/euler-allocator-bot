@@ -16,6 +16,7 @@ import { executeRebalance } from '@/utils/common/executeRebalance';
 import { getCurrentAllocation } from '@/utils/common/getCurrentAllocation';
 import { getRunLog, logger } from '@/utils/common/log';
 import { parseContractAddress } from '@/utils/common/parser';
+import { getVaultLabel } from '@/utils/common/vaultLabels';
 import { getEulerEarnInternalBalance } from '@/utils/euler/getEulerEarnInternalBalance';
 import { getEulerVaultDetails } from '@/utils/euler/getEulerVaultDetails';
 import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInitAlloc';
@@ -30,7 +31,6 @@ import {
   calculateApySpread,
   computeUnifiedApyAllocation,
 } from '@/utils/greedyStrategy/computeUnifiedApyAllocation';
-import { getVaultLabel } from '@/utils/common/vaultLabels';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
 import { type Address, type Hex, type PublicClient } from 'viem';
 
@@ -161,7 +161,10 @@ class Allocator {
             rpcClient: this.rpcClient,
           });
           const label = await getVaultLabel(strategyAddress, this.chainId);
-          return [strategy.strategy, { allocation, details, metadata: { label: label?.name } }] as const;
+          return [
+            strategy.strategy,
+            { allocation, details, metadata: { label: label?.name } },
+          ] as const;
         } else {
           // Can add more protocols here
           throw new Error(`Unknown protocol ${strategy.strategy}`);
@@ -315,10 +318,10 @@ class Allocator {
     const requiresSpreadCheck = this.optimizationMode !== 'annealing';
     const currentSpread = requiresSpreadCheck
       ? calculateApySpread({
-        vault,
-        allocation: currentAllocation,
-        returnsDetails: currentReturnsDetails,
-      })
+          vault,
+          allocation: currentAllocation,
+          returnsDetails: currentReturnsDetails,
+        })
       : undefined;
 
     return {
@@ -400,10 +403,10 @@ class Allocator {
 
     const spreadSummary = context.requiresSpreadCheck
       ? {
-        current: context.currentSpread,
-        final: finalSpread,
-        tolerance: this.apySpreadTolerance || undefined,
-      }
+          current: context.currentSpread,
+          final: finalSpread,
+          tolerance: this.apySpreadTolerance || undefined,
+        }
       : undefined;
 
     const allocationVerified = await this.verifyAllocation(

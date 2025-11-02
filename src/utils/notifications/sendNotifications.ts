@@ -1,7 +1,7 @@
 import ENV from '@/constants/constants';
 import { RunLog } from '@/types/types';
-import { logger } from '../common/log';
 import { getChainName } from '../common/chainConversion';
+import { logger } from '../common/log';
 import { sendSlackMessage } from './slack';
 import { sendTelegramMessage } from './telegram';
 
@@ -99,9 +99,7 @@ export async function notifyRun(runLog: RunLog) {
     }
   })();
   const earnVaultDescriptor =
-    runLog.metadata?.earnVault?.label ??
-    runLog.metadata?.earnVault?.name ??
-    ENV.EARN_VAULT_ADDRESS;
+    runLog.metadata?.earnVault?.label ?? runLog.metadata?.earnVault?.name ?? ENV.EARN_VAULT_ADDRESS;
 
   if (runLog.result === 'error') {
     const errorMessage =
