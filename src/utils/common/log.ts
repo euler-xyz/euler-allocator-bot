@@ -22,6 +22,7 @@ export function getRunLog(
   cashAmount: bigint,
   mode: RunLog['mode'],
   spreadSummary?: RunLog['spreadSummary'],
+  metadata?: RunLog['metadata'],
 ): RunLog {
   return {
     current: {
@@ -38,5 +39,6 @@ export function getRunLog(
     },
     mode,
     spreadSummary,
+    metadata,
   };
 }

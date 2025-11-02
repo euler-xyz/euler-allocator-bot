@@ -112,10 +112,18 @@ export type EulerEarn = {
       protocol: ProtocolEnum;
       allocation: bigint;
       details: StrategyDetails;
+      metadata?: {
+        name?: string;
+        label?: string;
+      };
     };
   };
   idleVaultAddress?: Address;
   assetDecimals: number;
+  metadata?: {
+    name?: string;
+    label?: string;
+  };
   initialAllocationQueue: Address[];
 };
 
@@ -148,4 +156,19 @@ export type RunLog = {
   };
   result?: 'abort' | 'simulation' | 'error' | Hash;
   error?: unknown;
+  metadata?: {
+    assetDecimals?: number;
+    strategies?: Record<
+      string,
+      {
+        symbol?: string;
+        label?: string;
+        name?: string;
+      }
+    >;
+    earnVault?: {
+      name?: string;
+      label?: string;
+    };
+  };
 };

@@ -1,0 +1,4 @@
+[submodule "external/euler-labels"]
+	path = external/euler-labels
+	url = https://github.com/euler-xyz/euler-labels.git
+	branch = master

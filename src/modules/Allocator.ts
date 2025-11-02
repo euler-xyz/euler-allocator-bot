@@ -30,6 +30,7 @@ import {
   calculateApySpread,
   computeUnifiedApyAllocation,
 } from '@/utils/greedyStrategy/computeUnifiedApyAllocation';
+import { getVaultLabel } from '@/utils/common/vaultLabels';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
 import { type Address, type Hex, type PublicClient } from 'viem';
 
@@ -139,11 +140,12 @@ class Allocator {
 
     const strategiesDetails = await Promise.all(
       lensData.strategies.map(async strategy => {
+        const strategyAddress = parseContractAddress(strategy.strategy);
         if (strategy.info.isEVault) {
           const details = await getEulerVaultDetails({
             assetDecimals: Number(lensData.assetDecimals),
             chainId: this.chainId,
-            vaultAddress: parseContractAddress(strategy.strategy),
+            vaultAddress: strategyAddress,
             vaultSymbol: strategy.info.vaultSymbol,
             lensAddress: this.evkVaultLensAddress,
             rpcClient: this.rpcClient,
@@ -151,20 +153,23 @@ class Allocator {
 
           const allocation = await getEulerEarnInternalBalance({
             address: this.earnVaultAddress,
-            vaultAddress: parseContractAddress(strategy.strategy),
+            vaultAddress: strategyAddress,
             cash: details.cash,
             totalBorrows: details.totalBorrows,
             totalShares: details.totalShares,
             chainId: this.chainId,
             rpcClient: this.rpcClient,
           });
-          return [strategy.strategy, { allocation, details }] as const;
+          const label = await getVaultLabel(strategyAddress, this.chainId);
+          return [strategy.strategy, { allocation, details, metadata: { label: label?.name } }] as const;
         } else {
           // Can add more protocols here
           throw new Error(`Unknown protocol ${strategy.strategy}`);
         }
       }),
     ).then(results => Object.fromEntries(results.filter(entry => entry !== undefined)));
+
+    const earnVaultLabel = await getVaultLabel(this.earnVaultAddress, this.chainId);
 
     const discoveredIdleVault =
       lensData.supplyQueue.length > 0 ? (lensData.supplyQueue.at(-1) as Address) : undefined;
@@ -179,12 +184,20 @@ class Allocator {
               cap: strategy.currentAllocationCap,
               protocol: protocolSchema.Enum.euler, // TODO handle
               ...strategiesDetails[strategy.strategy],
+              metadata: {
+                name: strategy.info.vaultName,
+                label: strategiesDetails[strategy.strategy]?.metadata?.label,
+              },
             },
           ];
         }),
       ),
       initialAllocationQueue: [...lensData.strategies].reverse().map(s => s.strategy),
       assetDecimals: Number(lensData.assetDecimals),
+      metadata: {
+        name: lensData.vaultName,
+        label: earnVaultLabel?.name,
+      },
     };
     if (idleVaultAddress) {
       config.idleVaultAddress = idleVaultAddress;
@@ -404,6 +417,26 @@ class Allocator {
       spreadSummary ? { current: spreadSummary.current, final: spreadSummary.final } : undefined,
     );
 
+    const strategyMetadata = Object.fromEntries(
+      await Promise.all(
+        Object.entries(context.vault.strategies).map(async ([address, strategy]) => {
+          let labelName = strategy.metadata?.label;
+          if (!labelName) {
+            const label = await getVaultLabel(address as Address, this.chainId);
+            labelName = label?.name;
+          }
+          return [
+            address,
+            {
+              symbol: strategy.details.symbol,
+              label: labelName,
+              name: strategy.metadata?.name,
+            },
+          ] as const;
+        }),
+      ),
+    );
+
     const runLog = getRunLog(
       context.currentAllocation,
       context.currentReturns,
@@ -415,6 +448,14 @@ class Allocator {
       context.cashAmount,
       context.mode,
       spreadSummary,
+      {
+        assetDecimals: context.vault.assetDecimals,
+        strategies: strategyMetadata,
+        earnVault: {
+          name: context.vault.metadata?.name,
+          label: context.vault.metadata?.label,
+        },
+      },
     );
 
     if (!allocationVerified) {
