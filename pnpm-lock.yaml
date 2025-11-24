@@ -18,8 +18,8 @@ dependencies:
     specifier: ^13.1.1
     version: 13.1.1
   viem:
-    specifier: ^2.22.17
-    version: 2.38.0(typescript@5.9.3)(zod@3.25.76)
+    specifier: ^2.40.0
+    version: 2.40.0(typescript@5.9.3)(zod@3.25.76)
   zod:
     specifier: ^3.24.1
     version: 3.25.76
@@ -3014,8 +3014,8 @@ packages:
       convert-source-map: 2.0.0
     dev: true
 
-  /viem@2.38.0(typescript@5.9.3)(zod@3.25.76):
-    resolution: {integrity: sha512-YU5TG8dgBNeYPrCMww0u9/JVeq2ZCk9fzk6QybrPkBooFysamHXL1zC3ua10aLPt9iWoA/gSVf1D9w7nc5B1aA==}
+  /viem@2.40.0(typescript@5.9.3)(zod@3.25.76):
+    resolution: {integrity: sha512-Y5XoBUzkNiIGfIR+Y7uD6e4xFDsdzR4PgxWgUwSPcRUq86XI+bxZjvvrYU/s+amgt1LpOvvIMdmgQ8+ZIaNi0g==}
     peerDependencies:
       typescript: '>=5.0.4'
     peerDependenciesMeta:

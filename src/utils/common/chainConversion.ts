@@ -1,33 +1,6 @@
 import { defineChain } from 'viem';
-import { arbitrum, base, mainnet } from 'viem/chains';
+import { arbitrum, base, mainnet, plasma, monad } from 'viem/chains';
 
-
-export const plasma = defineChain({
-  id: 9745,
-  name: "Plasma",
-  nativeCurrency: {
-    decimals: 18,
-    name: "XPL",
-    symbol: "XPL",
-  },
-  blockExplorers: {
-    default: {
-      name: "Plasma Explorer",
-      url: "https://plasmascan.to/",
-    },
-  },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.plasma.to"],
-    },
-  },
-  contracts: {
-    multicall3: {
-      address: "0xcA11bde05977b3631167028862bE2a173976CA11",
-      blockCreated: 0,
-    },
-  },
-} as const)
 
 /**
  * @notice Get the appropriate chain configuration based on chainId
@@ -45,6 +18,8 @@ export function getChain(chainId: number) {
       return arbitrum;
     case 9745:
       return plasma;
+    case 143:
+      return monad;
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
