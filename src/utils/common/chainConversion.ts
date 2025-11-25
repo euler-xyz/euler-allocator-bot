@@ -39,6 +39,8 @@ export function getChainName(chainId: number) {
       return 'base';
     case 42161:
       return 'arbitrum';
+    case 143:
+      return 'monad';
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
@@ -58,6 +60,8 @@ export function getChainNameDefiLlama(chainId: number) {
       return 'base';
     case 42161:
       return 'arbitrum';
+    case 143:
+      return 'monad';
     default:
       throw new Error(`Unsupported chainId: ${chainId}`);
   }
