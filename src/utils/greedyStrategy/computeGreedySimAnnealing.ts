@@ -64,10 +64,10 @@ export function generateNeighbor(
   const newAllocation = structuredClone(currentAllocation);
   const vaultList = vault.initialAllocationQueue.filter(v => v !== vault.idleVaultAddress);
 
-  const sourceIdx = Math.floor(Math.random() * vaultList.length);
+  const sourceIdx = Math.floor(Math.random() * vault.initialAllocationQueue.length);
   const destIdx =
     (sourceIdx + 1 + Math.floor(Math.random() * (vaultList.length - 1))) % vaultList.length;
-  const srcVaultAddress = vaultList[sourceIdx];
+  const srcVaultAddress = vault.initialAllocationQueue[sourceIdx];
   const destVaultAddress = vaultList[destIdx];
 
   const transferAmount = computeTransferAmount(
@@ -313,6 +313,8 @@ export const isAllocationAllowed = (
     return res;
   }
   // TODO add soft caps improvement check
+
+  if (Object.entries(newAllocation).some(([_, a]) => a.diff > 0 && a.diff < ENV.MIN_DEPOSIT)) return false
 
   return !isOverUtilized(oldReturnsDetails) && !isOutsideSoftCap(newAllocation);
 };

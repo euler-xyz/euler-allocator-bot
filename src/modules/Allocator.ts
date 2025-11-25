@@ -26,7 +26,7 @@ import {
   isOverUtilized,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
-import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
+import { isAddressEqual, zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
 
 /**
  * @title Allocator
@@ -244,7 +244,7 @@ class Allocator {
     }); // Can change returns computation
 
     /** Check if reallocation shouldn't occur */
-    const allocationVerified = await this.verifyAllocation(
+    let allocationVerified = await this.verifyAllocation(
       vault,
       currentAllocation,
       finalAllocation,
@@ -253,6 +253,21 @@ class Allocator {
       finalReturns,
       finalReturnsDetails,
     );
+
+    // // allocate equally if all assets are in idle
+    // if (finalReturns === currentReturns && currentAllocation[vault.idleVaultAddress].newAmount > 0) {
+    //   let idleAmount = currentAllocation[vault.idleVaultAddress].newAmount
+    //   const splitAmount = idleAmount / BigInt(vault.initialAllocationQueue.length - 1)
+    //   for (let strategy in finalAllocation) {
+    //     if (isAddressEqual(strategy as Address, vault.idleVaultAddress))
+    //       continue
+    //     idleAmount -= splitAmount
+    //     finalAllocation[strategy].newAmount += splitAmount
+    //   }
+    //   finalAllocation[vault.idleVaultAddress].newAmount = idleAmount
+
+    //   allocationVerified = true
+    // }
 
     const runLog = getRunLog(
       currentAllocation,
