@@ -62,8 +62,6 @@ const ENV = {
   /** @notice Optional. Min/Max allocations to strategies. Comma separated array of `vault_address:min_amount:max_amount`, where amount is in underlying wei */
   SOFT_CAPS: parseSoftCaps(process.env.SOFT_CAPS),
 
-
-
   MIN_DEPOSIT: 10, // avoid zero shares
 };
 

@@ -1,6 +1,5 @@
 import { defineChain } from 'viem';
-import { arbitrum, base, mainnet, plasma, monad } from 'viem/chains';
-
+import { arbitrum, base, mainnet, monad, plasma } from 'viem/chains';
 
 /**
  * @notice Get the appropriate chain configuration based on chainId

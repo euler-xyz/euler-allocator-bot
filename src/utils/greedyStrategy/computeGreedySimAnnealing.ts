@@ -66,7 +66,8 @@ export function generateNeighbor(
 
   const sourceIdx = Math.floor(Math.random() * vault.initialAllocationQueue.length);
   const destIdx =
-    (sourceIdx + 1 + Math.floor(Math.random() * (vaultList.length - 1))) % vaultList.length;
+    (sourceIdx + 1 + Math.floor(Math.random() * (vault.initialAllocationQueue.length - 1))) %
+    vaultList.length;
   const srcVaultAddress = vault.initialAllocationQueue[sourceIdx];
   const destVaultAddress = vaultList[destIdx];
 
@@ -278,6 +279,23 @@ export const isOverUtilizationImproved = (
   );
 };
 
+export const isSoftCapImproved = (oldAllocation: Allocation, newAllocation: Allocation) => {
+  if (!ENV.MAX_UTILIZATION) return false;
+
+  const softCapExcess = (allocation: Allocation) =>
+    Object.entries(allocation).reduce((accu, [strategy, a]) => {
+      if (ENV.SOFT_CAPS[strategy]) {
+        if (a.newAmount > ENV.SOFT_CAPS[strategy].max)
+          return accu + a.newAmount - ENV.SOFT_CAPS[strategy].max;
+        if (a.newAmount < ENV.SOFT_CAPS[strategy].min)
+          return accu + ENV.SOFT_CAPS[strategy].min - a.newAmount;
+      }
+      return accu;
+    }, 0n);
+
+  return softCapExcess(newAllocation) < softCapExcess(oldAllocation);
+};
+
 export const isOutsideSoftCap = (allocation: Allocation) => {
   for (const vault in allocation) {
     if (
@@ -304,17 +322,21 @@ export const isAllocationAllowed = (
     return false;
 
   if (isOverUtilized(oldReturnsDetails)) {
-    const res = isOverUtilizationImproved(
+    return isOverUtilizationImproved(
       oldAllocation,
       oldReturnsDetails,
       newAllocation,
       newReturnsDetails,
     );
-    return res;
+  }
+
+  if (isOutsideSoftCap(oldAllocation)) {
+    return isSoftCapImproved(oldAllocation, newAllocation);
   }
   // TODO add soft caps improvement check
 
-  if (Object.entries(newAllocation).some(([_, a]) => a.diff > 0 && a.diff < ENV.MIN_DEPOSIT)) return false
+  if (Object.entries(newAllocation).some(([_, a]) => a.diff > 0 && a.diff < ENV.MIN_DEPOSIT))
+    return false; // avoid zero shares error
 
   return !isOverUtilized(oldReturnsDetails) && !isOutsideSoftCap(newAllocation);
 };
@@ -325,7 +347,7 @@ export const isMinAllocation = (strategy: Address, allocation: Allocation) => {
   const res =
     ENV.SOFT_CAPS[strategy]?.min &&
     ((allocation[strategy].newAmount - ENV.SOFT_CAPS[strategy].min) * 100n) /
-    ENV.SOFT_CAPS[strategy].min >
-    PERCENT_TOLERANCE;
+      ENV.SOFT_CAPS[strategy].min >
+      PERCENT_TOLERANCE;
   return Boolean(res);
 };

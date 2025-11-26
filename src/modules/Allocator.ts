@@ -201,7 +201,7 @@ class Allocator {
       isOverUtilized(newReturnsDetails)
     ) {
       // throw new Error('Over-utilization unresolved');
-      return false
+      return false;
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
@@ -216,6 +216,7 @@ class Allocator {
   public async computeAllocation() {
     /** Get EulerEarn configuration and current allocations */
     const vault = await this.getEulerEarn();
+    console.log('vault: ', vault);
 
     const currentAllocation = getCurrentAllocation(vault);
 

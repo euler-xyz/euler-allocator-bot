@@ -73,7 +73,9 @@ const createVault = (strategies: StrategyConfig[], idleAllocation: bigint) => {
   };
 };
 
-const serializeAllocation = (allocation: Record<string, { oldAmount: bigint; newAmount: bigint; diff: bigint }>) =>
+const serializeAllocation = (
+  allocation: Record<string, { oldAmount: bigint; newAmount: bigint; diff: bigint }>,
+) =>
   Object.fromEntries(
     Object.entries(allocation).map(([address, values]) => [
       address,

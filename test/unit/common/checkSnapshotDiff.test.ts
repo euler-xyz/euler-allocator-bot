@@ -1,6 +1,9 @@
 import { Address, zeroAddress } from 'viem';
 import { protocolSchema } from '../../../src/types/types';
-import { checkStrategyAmountsDiff, checkVaultDetailsDiff } from '../../../src/utils/common/checkSnapshotDiff';
+import {
+  checkStrategyAmountsDiff,
+  checkVaultDetailsDiff,
+} from '../../../src/utils/common/checkSnapshotDiff';
 
 describe('checkSnapshotDiff', () => {
   const defaultVaultProps = {
@@ -137,5 +140,4 @@ describe('checkSnapshotDiff', () => {
       expect(result).toBe(true);
     });
   });
-
 });

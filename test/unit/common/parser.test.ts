@@ -1,3 +1,4 @@
+import { getAddress } from 'viem';
 import {
   parseBigIntToNumberWithScale,
   parseContractAddress,
@@ -7,7 +8,6 @@ import {
   parsePrivateKey,
   parseStrategies,
 } from '../../../src/utils/common/parser';
-import { getAddress } from 'viem';
 
 describe('common utils', () => {
   describe('parseEnvVar', () => {
