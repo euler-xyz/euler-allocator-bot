@@ -46,10 +46,13 @@ function computeTransferAmount(
   const maxTransferTempAdj =
     (maxTransfer * parseNumberToBigIntWithScale(temperature, 18)) / BigInt(10) ** BigInt(18);
 
-  return (
-    (maxTransferTempAdj * parseNumberToBigIntWithScale(Math.random(), 18)) /
+  let amount = (maxTransferTempAdj * parseNumberToBigIntWithScale(Math.random(), 18)) /
     BigInt(10) ** BigInt(18)
-  );
+
+  // correct for rounding
+  if (amount < maxTransferTempAdj && Math.random() > 0.5) amount += 1n;
+
+  return amount;
 }
 
 /**
@@ -214,7 +217,7 @@ const isBetterAllocation = (
   // TODO handle case where reallocation lowering below max utilization is not possible
   // TODO use actual kink
   if (isOverUtilized(oldReturnsDetails) || isOutsideSoftCap(oldAllocation)) {
-    return !isOverUtilized(newReturnsDetails) && !isOutsideSoftCap(newAllocation);
+    return !isOverUtilized(newReturnsDetails) && isSoftCapImproved(oldAllocation, newAllocation);
   }
 
   if (

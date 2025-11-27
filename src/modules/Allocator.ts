@@ -24,6 +24,7 @@ import {
   isFullyOverUtilized,
   isOutsideSoftCap,
   isOverUtilized,
+  isSoftCapImproved,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
 import { notifyRun } from '@/utils/notifications/sendNotifications';
 import { isAddressEqual, zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
@@ -205,7 +206,7 @@ class Allocator {
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
-    if (isOutsideSoftCap(currentAllocation)) return !isOutsideSoftCap(finalAllocation);
+    if (isOutsideSoftCap(currentAllocation)) return isSoftCapImproved(currentAllocation, finalAllocation);
 
     return newReturns - currentReturns >= this.allocationDiffTolerance;
   }
