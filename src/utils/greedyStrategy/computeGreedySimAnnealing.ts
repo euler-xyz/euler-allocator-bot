@@ -191,7 +191,7 @@ const isBetterAllocation = (
   initialReturnsDetails: ReturnsDetails,
 ) => {
   const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
-    const low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
+    let low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
       return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
         !isMinAllocation(getAddress(strategy), newAllocation) &&
@@ -208,6 +208,7 @@ const isBetterAllocation = (
         : accu;
     }, 0);
 
+    if (low == Infinity && high == 0) low = 0
     if (low > high) throw new Error('High/low apy');
 
     return high - low;
