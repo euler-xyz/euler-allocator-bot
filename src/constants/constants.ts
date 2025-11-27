@@ -15,6 +15,8 @@ dotenv.config();
  * and remain constant afterwards due to Node.js module caching
  */
 const ENV = {
+  /** @notice Earn vault name for notifications */
+  EARN_VAULT_NAME: parseEnvVar(process.env.EARN_VAULT_NAME, 'EARN_VAULT_NAME'),
   /** @notice Minimum required difference between current and new allocations for reallocation to happen (percentage, e.g. "3" means 3%) */
   ALLOCATION_DIFF_TOLERANCE: Number(
     parseEnvVar(process.env.ALLOCATION_DIFF_TOLERANCE, 'ALLOCATION_DIFF_TOLERANCE'),
