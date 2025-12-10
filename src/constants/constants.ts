@@ -65,6 +65,7 @@ const ENV = {
   SOFT_CAPS: parseSoftCaps(process.env.SOFT_CAPS),
 
   MIN_DEPOSIT: 10, // avoid zero shares
+  NO_REBALANCE_ALERT_TIMEOUT: 24 * 60 * 60 * 1000,
 };
 
 export default ENV;

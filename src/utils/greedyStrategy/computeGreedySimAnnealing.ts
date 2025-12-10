@@ -217,8 +217,12 @@ const isBetterAllocation = (
   // if current utilization is not allowed, the priority is to find an allowed one
   // TODO handle case where reallocation lowering below max utilization is not possible
   // TODO use actual kink
-  if (isOverUtilized(oldReturnsDetails) || isOutsideSoftCap(oldAllocation)) {
-    return !isOverUtilized(newReturnsDetails) && isSoftCapImproved(oldAllocation, newAllocation);
+  if (isOverUtilized(oldReturnsDetails)) {
+    return !isOverUtilized(newReturnsDetails);
+  }
+
+  if (isOutsideSoftCap(oldAllocation)) {
+    return isSoftCapImproved(oldAllocation, newAllocation);
   }
 
   if (

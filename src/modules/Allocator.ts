@@ -1,3 +1,4 @@
+import ENV from '@/constants/constants';
 import { EulerEarnVaultLensAbi } from '@/constants/EulerEarnVaultLensAbi';
 import {
   Allocation,
@@ -26,7 +27,7 @@ import {
   isOverUtilized,
   isSoftCapImproved,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
-import { notifyRun } from '@/utils/notifications/sendNotifications';
+import { notifyRun, sendNotifications } from '@/utils/notifications/sendNotifications';
 import { isAddressEqual, zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
 
 /**
@@ -45,6 +46,7 @@ class Allocator {
   private strategiesOverride?: StrategyConstants[];
   private rpcClient: PublicClient;
   private broadcast: boolean;
+  private lastRebalanceTimestamp: number;
 
   /**
    * @notice Creates a new Allocator instance
@@ -85,6 +87,7 @@ class Allocator {
     this.strategiesOverride = strategiesOverride;
     this.rpcClient = rpcClient;
     this.broadcast = broadcast;
+    this.lastRebalanceTimestamp = Date.now();
   }
 
   /**
@@ -299,10 +302,16 @@ class Allocator {
         runLog.result = 'error';
         runLog.error = error;
       }
+
+      this.lastRebalanceTimestamp = Date.now()
     }
 
     logger.info(runLog);
     await notifyRun(runLog);
+
+    if (Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT) {
+      await sendNotifications({ message: `No rebalance timeout ${ENV.EARN_VAULT_NAME}`, type: 'error' });
+    }
   }
 }
 
