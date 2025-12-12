@@ -309,8 +309,8 @@ class Allocator {
     logger.info(runLog);
     await notifyRun(runLog);
 
-    if (Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT) {
-      await sendNotifications({ message: `No rebalance timeout ${ENV.EARN_VAULT_NAME}`, type: 'error' });
+    if (ENV.NO_REBALANCE_ALERT_TIMEOUT != 0 && Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT) {
+      await sendNotifications({ message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress}` , type: 'error' });
       this.lastRebalanceTimestamp = Date.now()
     }
   }
