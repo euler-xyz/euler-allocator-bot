@@ -46,8 +46,9 @@ function computeTransferAmount(
   const maxTransferTempAdj =
     (maxTransfer * parseNumberToBigIntWithScale(temperature, 18)) / BigInt(10) ** BigInt(18);
 
-  let amount = (maxTransferTempAdj * parseNumberToBigIntWithScale(Math.random(), 18)) /
-    BigInt(10) ** BigInt(18)
+  let amount =
+    (maxTransferTempAdj * parseNumberToBigIntWithScale(Math.random(), 18)) /
+    BigInt(10) ** BigInt(18);
 
   // correct for rounding
   if (amount < maxTransferTempAdj && Math.random() > 0.5) amount += 1n;
@@ -208,7 +209,7 @@ const isBetterAllocation = (
         : accu;
     }, 0);
 
-    if (low == Infinity && high == 0) low = 0
+    if (low == Infinity && high == 0) low = 0;
     if (low > high) throw new Error('High/low apy');
 
     return high - low;

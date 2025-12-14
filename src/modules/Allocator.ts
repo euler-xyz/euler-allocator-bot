@@ -209,7 +209,8 @@ class Allocator {
     }
 
     if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
-    if (isOutsideSoftCap(currentAllocation)) return isSoftCapImproved(currentAllocation, finalAllocation);
+    if (isOutsideSoftCap(currentAllocation))
+      return isSoftCapImproved(currentAllocation, finalAllocation);
 
     return newReturns - currentReturns >= this.allocationDiffTolerance;
   }
@@ -302,15 +303,21 @@ class Allocator {
         runLog.error = error;
       }
       console.log('reset');
-      this.lastRebalanceTimestamp = Date.now()
+      this.lastRebalanceTimestamp = Date.now();
     }
 
     logger.info(runLog);
     await notifyRun(runLog);
 
-    if (ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS !== 0 && (Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS * 1000)) {
-      await sendNotifications({ message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress} ${this.lastRebalanceTimestamp} ${ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS} ${process.pid}` , type: 'error' });
-      this.lastRebalanceTimestamp = Date.now()
+    if (
+      ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS !== 0 &&
+      Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS * 1000
+    ) {
+      this.lastRebalanceTimestamp = Date.now();
+      await sendNotifications({
+        message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress} ${this.lastRebalanceTimestamp} ${ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS} ${process.pid}`,
+        type: 'error',
+      });
     }
   }
 }
