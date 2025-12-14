@@ -64,7 +64,7 @@ const ENV = {
   /** @notice Optional. Min/Max allocations to strategies. Comma separated array of `vault_address:min_amount:max_amount`, where amount is in underlying wei */
   SOFT_CAPS: parseSoftCaps(process.env.SOFT_CAPS),
   /** @notice Optional. Timeout to alert if no rebalance happened */
-  NO_REBALANCE_ALERT_TIMEOUT: Number(process.env.NO_REBALANCE_ALERT_TIMEOUT || 24 * 60 * 60 * 1000),
+  NO_REBALANCE_ALERT_TIMEOUT_SECONDS: Number(process.env.NO_REBALANCE_ALERT_TIMEOUT_SECONDS || 0),
   MIN_DEPOSIT: 10, // avoid zero shares
 };
 

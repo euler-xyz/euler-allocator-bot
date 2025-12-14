@@ -220,7 +220,6 @@ class Allocator {
   public async computeAllocation() {
     /** Get EulerEarn configuration and current allocations */
     const vault = await this.getEulerEarn();
-    console.log('vault: ', vault);
 
     const currentAllocation = getCurrentAllocation(vault);
 
@@ -302,15 +301,15 @@ class Allocator {
         runLog.result = 'error';
         runLog.error = error;
       }
-
+      console.log('reset');
       this.lastRebalanceTimestamp = Date.now()
     }
 
     logger.info(runLog);
     await notifyRun(runLog);
 
-    if (ENV.NO_REBALANCE_ALERT_TIMEOUT != 0 && Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT) {
-      await sendNotifications({ message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress} ${this.lastRebalanceTimestamp} ${ENV.NO_REBALANCE_ALERT_TIMEOUT}` , type: 'error' });
+    if (ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS !== 0 && (Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS * 1000)) {
+      await sendNotifications({ message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress} ${this.lastRebalanceTimestamp} ${ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS} ${process.pid}` , type: 'error' });
       this.lastRebalanceTimestamp = Date.now()
     }
   }
