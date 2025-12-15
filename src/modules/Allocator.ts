@@ -315,7 +315,7 @@ class Allocator {
     ) {
       this.lastRebalanceTimestamp = Date.now();
       await sendNotifications({
-        message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress} ${this.lastRebalanceTimestamp} ${ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS} ${process.pid}`,
+        message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress}`,
         type: 'error',
       });
     }
