@@ -275,17 +275,19 @@ export const isOverUtilizationImproved = (
 
   const utilizationWeightedDeviation = (allocation: Allocation, returnsDetails: ReturnsDetails) =>
     Object.entries(allocation).reduce((accu, [strategy, a]) => {
+      if (ENV.SOFT_CAPS[strategy]?.min === 0n) return accu
       const utilization = returnsDetails[strategy as Address].utilization;
 
       if (utilization > ENV.MAX_UTILIZATION) {
-        const excess = BigInt(Math.floor((utilization - ENV.MAX_UTILIZATION) * 10000));
-        return accu + (excess * a.newAmount) / 10000n;
+        const excess = BigInt(Math.floor((utilization - ENV.MAX_UTILIZATION)* 10000));
+        return accu + (excess * a.newAmount);
       }
       return accu;
     }, 0n);
 
+
   return (
-    utilizationWeightedDeviation(newAllocation, newReturnsDetails) <
+    utilizationWeightedDeviation(newAllocation, newReturnsDetails) <=
     utilizationWeightedDeviation(oldAllocation, oldReturnsDetails)
   );
 };
