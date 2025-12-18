@@ -255,8 +255,8 @@ const isBetterAllocation = (
 
 export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
   if (!ENV.MAX_UTILIZATION) return false;
-  return Object.entries(returnsDetails).filter(([vault, rd]) => {
-    return !ENV.SOFT_CAPS[vault] || ENV.SOFT_CAPS[vault].min !== 0n
+  return Object.entries(returnsDetails).filter(([vault]) => {
+    return !ENV.SOFT_CAPS[vault] || (ENV.SOFT_CAPS[vault].min + ENV.SOFT_CAPS[vault].max) !== 0n
   }).some(([_, rd]) => rd.utilization > ENV.MAX_UTILIZATION);
 };
 
