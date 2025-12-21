@@ -27,7 +27,7 @@ async function main() {
 
     logger.error(error);
     await sendNotifications({
-      message: `chain: ${ENV.CHAIN_ID}, vault: ${ENV.EARN_VAULT_ADDRESS}, Error\n${errorMessage}, ${console.trace()}`,
+      message: `chain: ${ENV.CHAIN_ID}, vault: ${ENV.EARN_VAULT_ADDRESS}, Error\n${errorMessage}, ${error}`,
       type: 'error',
     });
   }
