@@ -23,7 +23,7 @@ import { PublicClient, type Address } from 'viem';
  * @returns Array of active reward campaigns with daily rewards and blacklisted supply details
  * @throws Will send telegram error message if no Merkl data found for chain or price not found for underlying token
  */
-export async function getEulerRewardCampigns({
+export async function getEulerRewardCampaigns({
   vaultAddress,
   chainId,
   cash,
@@ -40,7 +40,7 @@ export async function getEulerRewardCampigns({
 }) {
   const response = await fetch(
     `https://api.merkl.xyz/v4/campaigns/?chainId=${chainId}&type=EULER`,
-    { signal: AbortSignal.timeout(15000) }, // TODO config
+    { signal: AbortSignal.timeout(30000) }, // TODO config
   );
   let data: MerklData[] = [];
   let errorMessage;

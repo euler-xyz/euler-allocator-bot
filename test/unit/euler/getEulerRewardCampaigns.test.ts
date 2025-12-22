@@ -1,5 +1,5 @@
 import { PublicClient, zeroAddress } from 'viem';
-import { getEulerRewardCampigns } from '../../../src/utils/euler/getEulerRewardCampigns';
+import { getEulerRewardCampaigns } from '../../../src/utils/euler/getEulerRewardCampaigns';
 
 jest.mock('@/utils/notifications/telegram', () => {
   const actualModule = jest.requireActual('@/utils/notifications/telegram');
@@ -61,7 +61,7 @@ describe('getEulerRewardCampaigns', () => {
       json: () => Promise.resolve([]),
     });
 
-    const result = await getEulerRewardCampigns({
+    const result = await getEulerRewardCampaigns({
       chainId,
       vaultAddress: zeroAddress,
       cash: BigInt(0),
@@ -85,7 +85,7 @@ describe('getEulerRewardCampaigns', () => {
     });
 
     await expect(
-      getEulerRewardCampigns({
+      getEulerRewardCampaigns({
         chainId,
         vaultAddress: zeroAddress,
         cash: BigInt(0),
@@ -138,7 +138,7 @@ describe('getEulerRewardCampaigns', () => {
         ]),
     });
 
-    const result = await getEulerRewardCampigns({
+    const result = await getEulerRewardCampaigns({
       chainId,
       vaultAddress: zeroAddress,
       cash: BigInt(0),

@@ -1,7 +1,7 @@
 import { VaultLensAbi } from '@/constants/VaultLensAbi';
 import { protocolSchema, StrategyDetails, strategyDetailsSchema } from '@/types/types';
 import { getEulerIrmConfig } from '@/utils/euler/getEulerIrmConfig';
-import { getEulerRewardCampigns } from '@/utils/euler/getEulerRewardCampigns';
+import { getEulerRewardCampaigns } from '@/utils/euler/getEulerRewardCampaigns';
 import {
   resolveEulerBorrowAPY,
   resolveEulerInterestRate,
@@ -68,7 +68,7 @@ export async function getEulerVaultDetails({
   });
 
   /* Get reward campaigns and compute reward APY */
-  const rewardCampaigns = await getEulerRewardCampigns({
+  const rewardCampaigns = await getEulerRewardCampaigns({
     vaultAddress,
     chainId,
     cash,
