@@ -302,14 +302,11 @@ class Allocator {
         runLog.result = 'error';
         runLog.error = error;
       }
-      console.log('reset');
       this.lastRebalanceTimestamp = Date.now();
     }
 
     logger.info(runLog);
     await notifyRun(runLog);
-    console.log('Date.now() - this.lastRebalanceTimestamp: ', Date.now() - this.lastRebalanceTimestamp);
-    console.log('ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS * 1000: ', ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS * 1000);
 
     if (
       ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS !== 0 &&
