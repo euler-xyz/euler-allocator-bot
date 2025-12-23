@@ -219,7 +219,12 @@ const isBetterAllocation = (
   // TODO handle case where reallocation lowering below max utilization is not possible
   // TODO use actual kink
   if (isOverUtilized(oldReturnsDetails)) {
-    return !isOverUtilized(newReturnsDetails);
+    return isOverUtilizationImproved(
+      oldAllocation,
+      oldReturnsDetails,
+      newAllocation,
+      newReturnsDetails,
+    );
   }
 
   if (isOutsideSoftCap(oldAllocation)) {
@@ -275,7 +280,7 @@ export const isOverUtilizationImproved = (
 
   const utilizationWeightedDeviation = (allocation: Allocation, returnsDetails: ReturnsDetails) =>
     Object.entries(allocation).reduce((accu, [strategy, a]) => {
-      if (ENV.SOFT_CAPS[strategy]?.min === 0n) return accu
+      if (ENV.SOFT_CAPS[strategy]?.min + ENV.SOFT_CAPS[strategy]?.max === 0n) return accu
       const utilization = returnsDetails[strategy as Address].utilization;
 
       if (utilization > ENV.MAX_UTILIZATION) {

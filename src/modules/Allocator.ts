@@ -9,8 +9,6 @@ import {
 } from '@/types/types';
 import {
   checkAllocationTotals,
-  checkStrategyAmountsDiff,
-  checkVaultDetailsDiff,
 } from '@/utils/common/checkSnapshotDiff';
 import { executeRebalance } from '@/utils/common/executeRebalance';
 import { getCurrentAllocation } from '@/utils/common/getCurrentAllocation';
@@ -18,17 +16,16 @@ import { getRunLog, logger } from '@/utils/common/log';
 import { parseContractAddress } from '@/utils/common/parser';
 import { getEulerEarnInternalBalance } from '@/utils/euler/getEulerEarnInternalBalance';
 import { getEulerVaultDetails } from '@/utils/euler/getEulerVaultDetails';
-import { computeGreedyInitAlloc } from '@/utils/greedyStrategy/computeGreedyInitAlloc';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
 import {
   computeGreedySimAnnealing,
-  isFullyOverUtilized,
   isOutsideSoftCap,
+  isOverUtilizationImproved,
   isOverUtilized,
   isSoftCapImproved,
 } from '@/utils/greedyStrategy/computeGreedySimAnnealing';
 import { notifyRun, sendNotifications } from '@/utils/notifications/sendNotifications';
-import { isAddressEqual, zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
+import { zeroAddress, type Address, type Hex, type PublicClient } from 'viem';
 
 /**
  * @title Allocator
@@ -199,16 +196,17 @@ class Allocator {
       throw new Error('Total assets / total allocated mismatch');
     }
 
-    if (
-      isOverUtilized(currentReturnsDetails) &&
-      !isFullyOverUtilized(currentReturnsDetails) &&
-      isOverUtilized(newReturnsDetails)
-    ) {
-      // throw new Error('Over-utilization unresolved');
-      return false;
-    }
+    // if (
+    //   isOverUtilized(currentReturnsDetails) &&
+    //   !isFullyOverUtilized(currentReturnsDetails) &&
+    //   isOverUtilized(newReturnsDetails)
+    // ) {
+    //   // throw new Error('Over-utilization unresolved');
+    //   return false;
+    // }
 
-    if (isOverUtilized(currentReturnsDetails)) return !isOverUtilized(newReturnsDetails);
+    if (isOverUtilized(currentReturnsDetails)) return isOverUtilizationImproved(
+      currentAllocation, currentReturnsDetails, finalAllocation, newReturnsDetails);
     if (isOutsideSoftCap(currentAllocation))
       return isSoftCapImproved(currentAllocation, finalAllocation);
 
@@ -312,7 +310,6 @@ class Allocator {
       ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS !== 0 &&
       Date.now() - this.lastRebalanceTimestamp > ENV.NO_REBALANCE_ALERT_TIMEOUT_SECONDS * 1000
     ) {
-      console.log("SENDING");
       this.lastRebalanceTimestamp = Date.now();
       await sendNotifications({
         message: `No rebalance timeout ${ENV.EARN_VAULT_NAME} ${this.earnVaultAddress}`,
