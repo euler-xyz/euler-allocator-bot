@@ -19,7 +19,7 @@ function computeTransferAmount(
   temperature: number,
 ) {
 
-  // Before the balance is executed, the interest earned on the source vault could make the withdrawal exceed cash
+  // Before the rebalance is executed, the interest earned on the source vault could make the withdrawal exceed cash
   // Limit max withdrawal by 60s of interest
   const SECONDS_PER_YEAR = 31536000n;
   const projectedSrcInterest = BigInt(Math.floor(currentReturnsDetails[srcVault].interestAPY * 100)) * srcVaultAllocation.oldAmount / 10000n * 60n / SECONDS_PER_YEAR;
