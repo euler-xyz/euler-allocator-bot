@@ -15,12 +15,21 @@ function computeTransferAmount(
   destVault: Address,
   srcVaultAllocation: AllocationDetails,
   destVaultAllocation: AllocationDetails,
+  currentReturnsDetails: ReturnsDetails,
   temperature: number,
 ) {
+
+  // Before the balance is executed, the interest earned on the source vault could make the withdrawal exceed cash
+  // Limit max withdrawal by 60s of interest
+  const SECONDS_PER_YEAR = 31536000n;
+  const projectedSrcInterest = BigInt(Math.floor(currentReturnsDetails[srcVault].interestAPY * 100)) * srcVaultAllocation.oldAmount / 10000n * 60n / SECONDS_PER_YEAR;
+
   const srcCurrentAmount = srcVaultAllocation.newAmount;
   const srcDetails = vault.strategies[srcVault].details;
   const destDetails = vault.strategies[destVault].details;
-  const srvVaultMaxWithdraw = srcDetails.cash + srcVaultAllocation.diff;
+  const srvVaultMaxWithdraw = srcDetails.cash + srcVaultAllocation.diff - projectedSrcInterest;
+  if (srvVaultMaxWithdraw < 0n) return 0n;
+
   const destSupplyCap =
     destDetails.supplyCap - destDetails.totalBorrows - destDetails.cash - destVaultAllocation.diff;
   const destStrategyCap = vault.strategies[destVault].cap - destVaultAllocation.newAmount;
@@ -63,6 +72,7 @@ function computeTransferAmount(
 export function generateNeighbor(
   vault: EulerEarn,
   currentAllocation: Allocation,
+  currentReturnsDetails: ReturnsDetails,
   temperature: number,
 ) {
   const newAllocation = structuredClone(currentAllocation);
@@ -81,6 +91,7 @@ export function generateNeighbor(
     destVaultAddress,
     newAllocation[srcVaultAddress],
     newAllocation[destVaultAddress],
+    currentReturnsDetails,
     temperature,
   );
 
@@ -125,7 +136,7 @@ export function computeGreedySimAnnealing({
   ) {
     let acceptedMoves = 0;
     for (let i = 0; i < ANNEALING_CONSTANTS.ITERATIONS_PER_TEMP; i++) {
-      const newAllocation = generateNeighbor(vault, currentAllocation, currentTemp);
+      const newAllocation = generateNeighbor(vault, currentAllocation, currentReturnsDetails, currentTemp);
       const { totalReturns: newReturns, details: newReturnsDetails } = computeGreedyReturns({
         vault,
         allocation: newAllocation,
