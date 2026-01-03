@@ -204,6 +204,7 @@ class Allocator {
     //   // throw new Error('Over-utilization unresolved');
     //   return false;
     // }
+    if (newReturns === currentReturns) return false;
 
     if (isOverUtilized(currentReturnsDetails)) return isOverUtilizationImproved(
       currentAllocation, currentReturnsDetails, finalAllocation, newReturnsDetails);
