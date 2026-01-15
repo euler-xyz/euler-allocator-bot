@@ -295,8 +295,9 @@ export const isOverUtilizationImproved = (
       const rd = returnsDetails[strategy as Address]
 
       if (rd.utilization > ENV.MAX_UTILIZATION) {
-        const excess = BigInt(Math.floor((rd.utilization - ENV.MAX_UTILIZATION) * rd.interestAPY * 1000000));
-        return accu + (excess * a.newAmount);
+        // const excess = BigInt(Math.floor((rd.utilization - ENV.MAX_UTILIZATION) * rd.interestAPY * 1000000));
+        const apy = BigInt(Math.floor(rd.interestAPY * 1000000));
+        return accu + (apy * a.newAmount);
       }
       return accu;
     }, 0n);
