@@ -34,6 +34,7 @@ describe('getEulerRewardCampaigns', () => {
     amount: '100000000000000000000',
     startTimestamp: Math.floor(Date.now() / 1000) - 1000,
     endTimestamp: Math.floor(Date.now() / 1000) + 1000,
+    type: 'TOKEN',
     subType: 0,
     params: {
       evkAddress: zeroAddress,
@@ -157,5 +158,32 @@ describe('getEulerRewardCampaigns', () => {
         blacklistedSupply: '200',
       },
     ]);
+  });
+
+  it('skips non-token campaigns without rewardToken.price', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve([
+          {
+            ...mockMerklData,
+            type: 'POINTS',
+            rewardToken: {
+              decimals: 18,
+            },
+          },
+        ]),
+    });
+
+    const result = await getEulerRewardCampaigns({
+      chainId,
+      vaultAddress: zeroAddress,
+      cash: BigInt(0),
+      totalBorrows: BigInt(0),
+      totalShares: BigInt(0),
+      rpcClient: mockRpcClient,
+    });
+
+    expect(result).toEqual([]);
   });
 });

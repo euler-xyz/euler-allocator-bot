@@ -76,6 +76,7 @@ export const merklDataSchema = z.object({
   amount: z.string(),
   startTimestamp: z.number(),
   endTimestamp: z.number(),
+  type: z.string(),
   subType: z.number(),
   params: z.object({
     evkAddress: addressSchema,
@@ -86,8 +87,16 @@ export const merklDataSchema = z.object({
   }),
   rewardToken: z.object({
     decimals: z.number(),
-    price: z.number(),
+    price: z.number().optional(),
   }),
+}).superRefine((value, ctx) => {
+  if (value.type === 'TOKEN' && value.rewardToken.price === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'rewardToken.price is required when type is TOKEN',
+      path: ['rewardToken', 'price'],
+    });
+  }
 });
 
 export type MerklData = z.infer<typeof merklDataSchema>;

@@ -17,6 +17,10 @@ export function computeMerklDailyReward({
   data: MerklData;
   priceUnderlyingToken: number;
 }) {
+  if (data.rewardToken.price === undefined) {
+    throw new Error('rewardToken.price is required to compute Merkl daily reward');
+  }
+
   const amount = parseBigIntToNumberWithScale(BigInt(data.amount), data.rewardToken.decimals);
   const amountInUSD = amount * data.rewardToken.price;
   const amountInTargetToken = amountInUSD / priceUnderlyingToken;

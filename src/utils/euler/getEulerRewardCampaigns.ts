@@ -68,6 +68,7 @@ export async function getEulerRewardCampaigns({
     const value = merklDataSchema.parse(rawValue);
     const currentTimestamp = Math.ceil(Date.now() / 1000);
     if (
+      value.rewardToken.price !== undefined &&
       value.subType === 0 &&
       currentTimestamp >= value.startTimestamp &&
       currentTimestamp <= value.endTimestamp &&

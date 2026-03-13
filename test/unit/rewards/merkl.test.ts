@@ -1,3 +1,4 @@
+import { merklDataSchema } from '@/types/types';
 import { zeroAddress } from 'viem';
 import { computeMerklDailyReward, computeMerklRewardAPY } from '../../../src/utils/rewards/merkl';
 
@@ -9,6 +10,7 @@ describe('computeMerklDailyReward', () => {
       amount: '100000000000000000000',
       startTimestamp: Math.floor(Date.now() / 1000) - 1000,
       endTimestamp: Math.floor(Date.now() / 1000) + 1000,
+      type: 'TOKEN',
       subType: 0,
       params: {
         evkAddress: zeroAddress,
@@ -29,6 +31,29 @@ describe('computeMerklDailyReward', () => {
         priceUnderlyingToken: 0.1,
       });
       expect(result).toBe(21600);
+    });
+
+    it('requires rewardToken.price when type is TOKEN', () => {
+      expect(() =>
+        merklDataSchema.parse({
+          ...mockMerklData,
+          rewardToken: {
+            decimals: 18,
+          },
+        }),
+      ).toThrow('rewardToken.price is required when type is TOKEN');
+    });
+
+    it('allows rewardToken.price to be omitted for non-TOKEN types', () => {
+      expect(() =>
+        merklDataSchema.parse({
+          ...mockMerklData,
+          type: 'POINTS',
+          rewardToken: {
+            decimals: 18,
+          },
+        }),
+      ).not.toThrow();
     });
   });
 
