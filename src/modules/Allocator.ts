@@ -206,8 +206,14 @@ class Allocator {
     // }
     if (newReturns === currentReturns) return false;
 
-    if (isOverUtilized(currentReturnsDetails)) return isOverUtilizationImproved(
-      currentAllocation, currentReturnsDetails, finalAllocation, newReturnsDetails);
+    if (isOverUtilized(currentReturnsDetails))
+      return isOverUtilizationImproved(
+        vault,
+        currentAllocation,
+        currentReturnsDetails,
+        finalAllocation,
+        newReturnsDetails,
+      );
     if (isOutsideSoftCap(currentAllocation))
       return isSoftCapImproved(currentAllocation, finalAllocation);
 

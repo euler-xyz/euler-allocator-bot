@@ -145,6 +145,7 @@ export function computeGreedySimAnnealing({
       if (
         Math.random() < Math.exp((newReturns - currentReturns) / currentTemp) &&
         isAllocationAllowed(
+          vault,
           currentAllocation,
           currentReturnsDetails,
           newAllocation,
@@ -231,6 +232,7 @@ const isBetterAllocation = (
   // TODO use actual kink
   if (isOverUtilized(oldReturnsDetails)) {
     return isOverUtilizationImproved(
+      vault,
       oldAllocation,
       oldReturnsDetails,
       newAllocation,
@@ -244,7 +246,7 @@ const isBetterAllocation = (
 
   if (
     newReturns > oldReturns &&
-    isAllocationAllowed(oldAllocation, oldReturnsDetails, newAllocation, newReturnsDetails)
+    isAllocationAllowed(vault, oldAllocation, oldReturnsDetails, newAllocation, newReturnsDetails)
   ) {
     if (ENV.MAX_STRATEGY_APY_DIFF) {
       const initialMaxDiff = getMaxAPYDiff(initialReturnsDetails);
@@ -282,6 +284,7 @@ export const isFullyOverUtilized = (returnsDetails: ReturnsDetails) => {
 };
 
 export const isOverUtilizationImproved = (
+  vault: EulerEarn,
   oldAllocation: Allocation,
   oldReturnsDetails: ReturnsDetails,
   newAllocation: Allocation,
@@ -289,23 +292,27 @@ export const isOverUtilizationImproved = (
 ) => {
   if (!ENV.MAX_UTILIZATION) return false;
 
-  const utilizationWeightedDeviation = (allocation: Allocation, returnsDetails: ReturnsDetails) =>
+  const WAD = 10n ** 18n;
+  const maxUtilization = parseNumberToBigIntWithScale(ENV.MAX_UTILIZATION, 18);
+  const ceilDiv = (a: bigint, b: bigint) => (a + b - 1n) / b;
+  const utilizationLiquidityShortfall = (allocation: Allocation, returnsDetails: ReturnsDetails) =>
     Object.entries(allocation).reduce((accu, [strategy, a]) => {
-      if (ENV.SOFT_CAPS[strategy]?.min + ENV.SOFT_CAPS[strategy]?.max === 0n) return accu
-      const rd = returnsDetails[strategy as Address]
+      const softCaps = ENV.SOFT_CAPS[strategy];
+      if (softCaps && softCaps.min + softCaps.max === 0n) return accu;
 
-      if (rd.utilization > ENV.MAX_UTILIZATION) {
-        // const excess = BigInt(Math.floor((rd.utilization - ENV.MAX_UTILIZATION) * rd.interestAPY * 1000000));
-        const apy = BigInt(Math.floor(rd.interestAPY * 1000000));
-        return accu + (apy * a.newAmount);
-      }
-      return accu;
+      const rd = returnsDetails[strategy as Address];
+      if (rd.utilization <= ENV.MAX_UTILIZATION) return accu;
+
+      const { cash, totalBorrows } = vault.strategies[strategy].details;
+      const postRebalanceCash = cash + a.diff;
+      const requiredCash = ceilDiv(totalBorrows * (WAD - maxUtilization), maxUtilization);
+
+      return postRebalanceCash < requiredCash ? accu + (requiredCash - postRebalanceCash) : accu;
     }, 0n);
 
-
   return (
-    utilizationWeightedDeviation(newAllocation, newReturnsDetails) <=
-    utilizationWeightedDeviation(oldAllocation, oldReturnsDetails)
+    utilizationLiquidityShortfall(newAllocation, newReturnsDetails) <
+    utilizationLiquidityShortfall(oldAllocation, oldReturnsDetails)
   );
 };
 
@@ -339,6 +346,7 @@ export const isOutsideSoftCap = (allocation: Allocation) => {
 };
 
 export const isAllocationAllowed = (
+  vault: EulerEarn,
   oldAllocation: Allocation,
   oldReturnsDetails: ReturnsDetails,
   newAllocation: Allocation,
@@ -353,6 +361,7 @@ export const isAllocationAllowed = (
 
   if (isOverUtilized(oldReturnsDetails)) {
     return isOverUtilizationImproved(
+      vault,
       oldAllocation,
       oldReturnsDetails,
       newAllocation,
