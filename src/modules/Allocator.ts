@@ -11,6 +11,7 @@ import {
   checkAllocationTotals,
 } from '@/utils/common/checkSnapshotDiff';
 import { executeRebalance } from '@/utils/common/executeRebalance';
+import { meetsMinReallocationPercentage } from '@/utils/common/getReallocationSize';
 import { getCurrentAllocation } from '@/utils/common/getCurrentAllocation';
 import { getRunLog, logger } from '@/utils/common/log';
 import { parseContractAddress } from '@/utils/common/parser';
@@ -36,6 +37,7 @@ class Allocator {
   private allocatorPrivateKey: Hex;
   private cashPercentage: bigint;
   private chainId: number;
+  private minReallocationPercentage: number;
   private earnVaultAddress: Address;
   private evcAddress: Address;
   private evkVaultLensAddress: Address;
@@ -54,6 +56,7 @@ class Allocator {
     cashPercentage,
     chainId,
     earnVaultAddress,
+    minReallocationPercentage,
     evcAddress,
     evkVaultLensAddress,
     eulerEarnLensAddress,
@@ -66,6 +69,7 @@ class Allocator {
     cashPercentage: bigint;
     chainId: number;
     earnVaultAddress: Address;
+    minReallocationPercentage: number;
     evcAddress: Address;
     evkVaultLensAddress: Address;
     eulerEarnLensAddress: Address;
@@ -78,6 +82,7 @@ class Allocator {
     this.cashPercentage = cashPercentage;
     this.chainId = chainId;
     this.earnVaultAddress = earnVaultAddress;
+    this.minReallocationPercentage = minReallocationPercentage;
     this.evcAddress = evcAddress;
     this.evkVaultLensAddress = evkVaultLensAddress;
     this.eulerEarnLensAddress = eulerEarnLensAddress;
@@ -205,6 +210,13 @@ class Allocator {
     //   return false;
     // }
     if (newReturns === currentReturns) return false;
+    if (
+      !meetsMinReallocationPercentage({
+        allocation: finalAllocation,
+        minReallocationPercentage: this.minReallocationPercentage,
+      })
+    )
+      return false;
 
     if (isOverUtilized(currentReturnsDetails))
       return isOverUtilizationImproved(

@@ -102,4 +102,36 @@ describe('over utilization handling', () => {
       true,
     );
   });
+
+  it('uses APY equalization when utilization cannot be fully resolved', () => {
+    const infeasibleOldAllocation = {
+      [overUtilizedVault]: { oldAmount: 100n, newAmount: 100n, diff: 0n },
+      [otherVault]: { oldAmount: 30n, newAmount: 30n, diff: 0n },
+    };
+
+    const infeasibleNewAllocation = {
+      [overUtilizedVault]: { oldAmount: 100n, newAmount: 100n, diff: 0n },
+      [otherVault]: { oldAmount: 30n, newAmount: 30n, diff: 0n },
+    };
+
+    const infeasibleOldReturns: ReturnsDetails = {
+      [overUtilizedVault]: { interestAPY: 20, rewardsAPY: 0, utilization: 0.95 },
+      [otherVault]: { interestAPY: 5, rewardsAPY: 0, utilization: 0.95 },
+    };
+
+    const infeasibleNewReturns: ReturnsDetails = {
+      [overUtilizedVault]: { interestAPY: 13, rewardsAPY: 0, utilization: 0.95 },
+      [otherVault]: { interestAPY: 12, rewardsAPY: 0, utilization: 0.95 },
+    };
+
+    expect(
+      isOverUtilizationImproved(
+        vault,
+        infeasibleOldAllocation,
+        infeasibleOldReturns,
+        infeasibleNewAllocation,
+        infeasibleNewReturns,
+      ),
+    ).toBe(true);
+  });
 });

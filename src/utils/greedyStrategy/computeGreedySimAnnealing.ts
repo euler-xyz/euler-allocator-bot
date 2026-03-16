@@ -283,6 +283,104 @@ export const isFullyOverUtilized = (returnsDetails: ReturnsDetails) => {
   return Object.values(returnsDetails).every(rd => rd.utilization > ENV.MAX_UTILIZATION);
 };
 
+const WAD = 10n ** 18n;
+const ceilDiv = (a: bigint, b: bigint) => (a + b - 1n) / b;
+
+const getTargetCashForMaxUtilization = (totalBorrows: bigint) => {
+  const maxUtilization = parseNumberToBigIntWithScale(ENV.MAX_UTILIZATION, 18);
+  return ceilDiv(totalBorrows * (WAD - maxUtilization), maxUtilization);
+};
+
+const getUtilizationLiquidityShortfall = (
+  vault: EulerEarn,
+  allocation: Allocation,
+  returnsDetails: ReturnsDetails,
+) =>
+  Object.entries(allocation).reduce((accu, [strategy, a]) => {
+    const softCaps = ENV.SOFT_CAPS[strategy];
+    if (softCaps && softCaps.min + softCaps.max === 0n) return accu;
+
+    const rd = returnsDetails[strategy as Address];
+    if (rd.utilization <= ENV.MAX_UTILIZATION) return accu;
+
+    const { cash, totalBorrows } = vault.strategies[strategy].details;
+    const postRebalanceCash = cash + a.diff;
+    const requiredCash = getTargetCashForMaxUtilization(totalBorrows);
+
+    return postRebalanceCash < requiredCash ? accu + (requiredCash - postRebalanceCash) : accu;
+  }, 0n);
+
+const canFullyResolveOverUtilization = (
+  vault: EulerEarn,
+  allocation: Allocation,
+  returnsDetails: ReturnsDetails,
+) => {
+  let totalDeficit = 0n;
+  let totalMovable = 0n;
+
+  for (const [strategy, a] of Object.entries(allocation)) {
+    if (strategy === vault.idleVaultAddress) {
+      totalMovable += a.newAmount;
+      continue;
+    }
+
+    const softCaps = ENV.SOFT_CAPS[strategy];
+    if (softCaps && softCaps.min + softCaps.max === 0n) continue;
+
+    const { cash, totalBorrows, supplyCap } = vault.strategies[strategy].details;
+    const postRebalanceCash = cash + a.diff;
+    const requiredCash = getTargetCashForMaxUtilization(totalBorrows);
+    const deficit = postRebalanceCash < requiredCash ? requiredCash - postRebalanceCash : 0n;
+
+    const supplyCapRoom = supplyCap - totalBorrows - postRebalanceCash;
+    const strategyCapRoom = vault.strategies[strategy].cap - a.newAmount;
+    const recipientHeadroom = [supplyCapRoom, strategyCapRoom].reduce((min, curr) =>
+      curr < min ? curr : min,
+    );
+
+    if (deficit > 0n) {
+      if (recipientHeadroom < deficit) return false;
+      totalDeficit += deficit;
+      continue;
+    }
+
+    const withdrawableBeforeSoftMin =
+      postRebalanceCash > requiredCash ? postRebalanceCash - requiredCash : 0n;
+    const softMin = softCaps?.min ?? 0n;
+    const withdrawableBeforeMinAllocation = a.newAmount > softMin ? a.newAmount - softMin : 0n;
+
+    totalMovable +=
+      withdrawableBeforeSoftMin < withdrawableBeforeMinAllocation
+        ? withdrawableBeforeSoftMin
+        : withdrawableBeforeMinAllocation;
+  }
+
+  return totalMovable >= totalDeficit;
+};
+
+const getApySpread = (
+  vault: EulerEarn,
+  allocation: Allocation,
+  returnsDetails: ReturnsDetails,
+) => {
+  let low = Infinity;
+  let high = 0;
+
+  for (const [strategy, val] of Object.entries(returnsDetails)) {
+    if (isAddressEqual(strategy as Address, vault.idleVaultAddress)) continue;
+    if (isMinAllocation(getAddress(strategy), allocation)) continue;
+
+    const apy = val.interestAPY + val.rewardsAPY;
+    if (apy < low) low = apy;
+    if (apy > high) high = apy;
+  }
+
+  if (low === Infinity && high === 0) return 0;
+  if (low > high) throw new Error('High/low apy');
+
+  return high - low;
+};
+
 export const isOverUtilizationImproved = (
   vault: EulerEarn,
   oldAllocation: Allocation,
@@ -292,28 +390,18 @@ export const isOverUtilizationImproved = (
 ) => {
   if (!ENV.MAX_UTILIZATION) return false;
 
-  const WAD = 10n ** 18n;
-  const maxUtilization = parseNumberToBigIntWithScale(ENV.MAX_UTILIZATION, 18);
-  const ceilDiv = (a: bigint, b: bigint) => (a + b - 1n) / b;
-  const utilizationLiquidityShortfall = (allocation: Allocation, returnsDetails: ReturnsDetails) =>
-    Object.entries(allocation).reduce((accu, [strategy, a]) => {
-      const softCaps = ENV.SOFT_CAPS[strategy];
-      if (softCaps && softCaps.min + softCaps.max === 0n) return accu;
+  const oldShortfall = getUtilizationLiquidityShortfall(vault, oldAllocation, oldReturnsDetails);
+  const newShortfall = getUtilizationLiquidityShortfall(vault, newAllocation, newReturnsDetails);
 
-      const rd = returnsDetails[strategy as Address];
-      if (rd.utilization <= ENV.MAX_UTILIZATION) return accu;
+  if (newShortfall < oldShortfall) return true;
+  if (newShortfall > oldShortfall) return false;
 
-      const { cash, totalBorrows } = vault.strategies[strategy].details;
-      const postRebalanceCash = cash + a.diff;
-      const requiredCash = ceilDiv(totalBorrows * (WAD - maxUtilization), maxUtilization);
+  if (!canFullyResolveOverUtilization(vault, oldAllocation, oldReturnsDetails)) {
+    return getApySpread(vault, newAllocation, newReturnsDetails) <
+      getApySpread(vault, oldAllocation, oldReturnsDetails);
+  }
 
-      return postRebalanceCash < requiredCash ? accu + (requiredCash - postRebalanceCash) : accu;
-    }, 0n);
-
-  return (
-    utilizationLiquidityShortfall(newAllocation, newReturnsDetails) <
-    utilizationLiquidityShortfall(oldAllocation, oldReturnsDetails)
-  );
+  return false;
 };
 
 export const isSoftCapImproved = (oldAllocation: Allocation, newAllocation: Allocation) => {

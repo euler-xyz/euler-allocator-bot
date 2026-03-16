@@ -65,6 +65,8 @@ const ENV = {
   SOFT_CAPS: parseSoftCaps(process.env.SOFT_CAPS),
   /** @notice Optional. Timeout to alert if no rebalance happened */
   NO_REBALANCE_ALERT_TIMEOUT_SECONDS: Number(process.env.NO_REBALANCE_ALERT_TIMEOUT_SECONDS || 0),
+  /** @notice Optional. Min percentage of total liquidity that must move for a rebalance to execute, fraction e.g. 0.01 = 1%. Default 0.1% */
+  MIN_REALLOCATION_PERCENTAGE: Number(process.env.MIN_REALLOCATION_PERCENTAGE || 0.001),
   MIN_DEPOSIT: 10, // avoid zero shares
 };
 

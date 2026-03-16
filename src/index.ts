@@ -11,6 +11,7 @@ const allocator = new Allocator({
   cashPercentage: ENV.CASH_PERCENTAGE,
   chainId: ENV.CHAIN_ID,
   earnVaultAddress: ENV.EARN_VAULT_ADDRESS,
+  minReallocationPercentage: ENV.MIN_REALLOCATION_PERCENTAGE,
   evcAddress: ENV.EVC_ADDRESS,
   evkVaultLensAddress: ENV.VAULT_LENS_ADDRESS,
   eulerEarnLensAddress: ENV.EULER_EARN_VAULT_LENS_ADDRESS,
