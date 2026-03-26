@@ -80,6 +80,9 @@ describe('computeGreedySimAnnealing', () => {
     ),
   });
 
+  const buildReturnsDetails = (value: number, addresses: Address[]) =>
+    buildReturns(value, addresses).details;
+
   const stringifyAllocation = (
     allocation: Record<string, { newAmount: bigint; oldAmount: bigint; diff: bigint }>,
   ) =>
@@ -135,7 +138,12 @@ describe('computeGreedySimAnnealing', () => {
         },
       };
 
-      const newAllocation = generateNeighbor(vault, currentAllocation, temperature);
+      const newAllocation = generateNeighbor(
+        vault,
+        currentAllocation,
+        buildReturnsDetails(0, Object.keys(strategyDetails) as Address[]),
+        temperature,
+      );
       expect(stringifyAllocation(newAllocation)).toEqual(
         stringifyAllocation({
           '0x1': {
@@ -181,7 +189,12 @@ describe('computeGreedySimAnnealing', () => {
         },
       };
 
-      const newAllocation = generateNeighbor(vault, currentAllocation, temperature);
+      const newAllocation = generateNeighbor(
+        vault,
+        currentAllocation,
+        buildReturnsDetails(0, Object.keys(strategyDetails) as Address[]),
+        temperature,
+      );
       expect(stringifyAllocation(newAllocation)).toEqual(
         stringifyAllocation({
           '0x1': {
@@ -227,7 +240,12 @@ describe('computeGreedySimAnnealing', () => {
         },
       };
 
-      const newAllocation = generateNeighbor(vault, currentAllocation, temperature);
+      const newAllocation = generateNeighbor(
+        vault,
+        currentAllocation,
+        buildReturnsDetails(0, Object.keys(strategyDetails) as Address[]),
+        temperature,
+      );
       expect(stringifyAllocation(newAllocation)).toEqual(
         stringifyAllocation({
           '0x1': {
@@ -330,6 +348,130 @@ describe('computeGreedySimAnnealing', () => {
       });
 
       expect(bestReturns).toBe(9);
+    });
+  });
+
+  describe('protected reallocation sources', () => {
+    const protectedStrategy = '0x1000000000000000000000000000000000000001' as Address;
+    const recipientStrategy = '0x2000000000000000000000000000000000000002' as Address;
+    const idleStrategy = '0x3000000000000000000000000000000000000003' as Address;
+
+    const strategyDetails = {
+      [protectedStrategy]: {
+        ...defaultVaultProps,
+        vault: protectedStrategy,
+        cash: 3000n,
+        supplyCap: 15000n,
+      },
+      [recipientStrategy]: {
+        ...defaultVaultProps,
+        vault: recipientStrategy,
+        supplyCap: 15000n,
+        cash: 9000n,
+        totalBorrows: 1000n,
+      },
+      [idleStrategy]: {
+        ...defaultVaultProps,
+        vault: idleStrategy,
+        cash: 4000n,
+        supplyCap: 20000n,
+      },
+    };
+
+    const initialAllocation = {
+      [protectedStrategy]: {
+        newAmount: 700n,
+        oldAmount: 700n,
+        diff: 0n,
+      },
+      [recipientStrategy]: {
+        newAmount: 250n,
+        oldAmount: 250n,
+        diff: 0n,
+      },
+      [idleStrategy]: {
+        newAmount: 500n,
+        oldAmount: 500n,
+        diff: 0n,
+      },
+    };
+
+    beforeEach(() => {
+      jest.resetModules();
+      process.env.NO_REALLOCATION_FROM = protectedStrategy;
+    });
+
+    afterEach(() => {
+      delete process.env.NO_REALLOCATION_FROM;
+    });
+
+    it('does not pick a protected strategy as the source vault', () => {
+      jest.isolateModules(() => {
+        const {
+          generateNeighbor: isolatedGenerateNeighbor,
+        } = require('../../../src/utils/greedyStrategy/computeGreedySimAnnealing');
+
+        const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
+        try {
+          const vault = {
+            ...buildVault(strategyDetails),
+            idleVaultAddress: idleStrategy,
+            initialAllocationQueue: [protectedStrategy, recipientStrategy, idleStrategy],
+          };
+          const newAllocation = isolatedGenerateNeighbor(
+            vault,
+            initialAllocation,
+            buildReturnsDetails(0, Object.keys(strategyDetails) as Address[]),
+            1,
+          );
+
+          expect(newAllocation[protectedStrategy].newAmount).toBe(800n);
+          expect(newAllocation[protectedStrategy].diff).toBe(100n);
+          expect(newAllocation[recipientStrategy].newAmount).toBeLessThan(
+            initialAllocation[recipientStrategy].newAmount,
+          );
+        } finally {
+          randomSpy.mockRestore();
+        }
+      });
+    });
+
+    it('rejects allocations that withdraw from a protected strategy', () => {
+      jest.isolateModules(() => {
+        const {
+          isAllocationAllowed: isolatedIsAllocationAllowed,
+        } = require('../../../src/utils/greedyStrategy/computeGreedySimAnnealing');
+
+        const vault = {
+          ...buildVault(strategyDetails),
+          idleVaultAddress: idleStrategy,
+          initialAllocationQueue: [protectedStrategy, recipientStrategy, idleStrategy],
+        };
+        const returnsDetails = buildReturnsDetails(0, Object.keys(strategyDetails) as Address[]);
+        const newAllocation = {
+          ...initialAllocation,
+          [protectedStrategy]: {
+            ...initialAllocation[protectedStrategy],
+            newAmount: 600n,
+            diff: -100n,
+          },
+          [recipientStrategy]: {
+            ...initialAllocation[recipientStrategy],
+            newAmount: 350n,
+            diff: 100n,
+          },
+        };
+
+        expect(
+          isolatedIsAllocationAllowed(
+            vault,
+            initialAllocation,
+            returnsDetails,
+            newAllocation,
+            returnsDetails,
+          ),
+        ).toBe(false);
+      });
     });
   });
 });

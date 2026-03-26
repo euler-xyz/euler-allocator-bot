@@ -44,6 +44,15 @@ export function parseStrategies(strategies?: string[]) {
 }
 
 /**
+ * @notice Parses a comma-separated list of addresses and checksum-normalizes each entry
+ * @param addresses The list of addresses to parse
+ * @returns A list of checksum-encoded addresses
+ */
+export function parseAddressList(addresses?: string[]) {
+  return addresses?.filter(Boolean).map(address => addressSchema.parse(address)) ?? [];
+}
+
+/**
  * @notice Normalizes a contract address and returns it typed as an Address
  * @param contractAddress The contract address string to parse
  * @returns Checksum encoded address

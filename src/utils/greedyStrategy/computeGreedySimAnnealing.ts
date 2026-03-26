@@ -3,7 +3,18 @@ import ENV from '@/constants/constants';
 import { Allocation, EulerEarn, ReturnsDetails, type AllocationDetails } from '@/types/types';
 import { parseNumberToBigIntWithScale } from '@/utils/common/parser';
 import { computeGreedyReturns } from '@/utils/greedyStrategy/computeGreedyReturns';
-import { Address, getAddress, isAddressEqual, maxUint256 } from 'viem';
+import { Address, maxUint256 } from 'viem';
+
+const isSameAddress = (a: Address, b: Address) => a.toLowerCase() === b.toLowerCase();
+
+const isProtectedReallocationSource = (strategy: Address) =>
+  ENV.NO_REALLOCATION_FROM.some(protectedStrategy => isSameAddress(protectedStrategy, strategy));
+
+const hasProtectedOutflow = (allocation: Allocation) =>
+  Object.entries(allocation).some(
+    ([strategy, { newAmount, oldAmount }]) =>
+      isProtectedReallocationSource(strategy as Address) && newAmount < oldAmount,
+  );
 
 /**
  * @notice Computes amount to transfer between vaults during annealing
@@ -18,11 +29,15 @@ function computeTransferAmount(
   currentReturnsDetails: ReturnsDetails,
   temperature: number,
 ) {
-
   // Before the rebalance is executed, the interest earned on the source vault could make the withdrawal exceed cash
   // Limit max withdrawal by 60s of interest
   const SECONDS_PER_YEAR = 31536000n;
-  const projectedSrcInterest = BigInt(Math.floor(currentReturnsDetails[srcVault].interestAPY * 100)) * srcVaultAllocation.oldAmount / 10000n * 60n / SECONDS_PER_YEAR;
+  const projectedSrcInterest =
+    (((BigInt(Math.floor(currentReturnsDetails[srcVault].interestAPY * 100)) *
+      srcVaultAllocation.oldAmount) /
+      10000n) *
+      60n) /
+    SECONDS_PER_YEAR;
 
   const srcCurrentAmount = srcVaultAllocation.newAmount;
   const srcDetails = vault.strategies[srcVault].details;
@@ -76,14 +91,21 @@ export function generateNeighbor(
   temperature: number,
 ) {
   const newAllocation = structuredClone(currentAllocation);
+  const sourceVaults = vault.initialAllocationQueue.filter(
+    strategy => !isProtectedReallocationSource(strategy),
+  );
   const vaultList = vault.initialAllocationQueue.filter(v => v !== vault.idleVaultAddress);
 
-  const sourceIdx = Math.floor(Math.random() * vault.initialAllocationQueue.length);
-  const destIdx =
-    (sourceIdx + 1 + Math.floor(Math.random() * (vault.initialAllocationQueue.length - 1))) %
-    vaultList.length;
-  const srcVaultAddress = vault.initialAllocationQueue[sourceIdx];
-  const destVaultAddress = vaultList[destIdx];
+  if (sourceVaults.length === 0 || vaultList.length === 0) return newAllocation;
+
+  const sourceIdx = Math.floor(Math.random() * sourceVaults.length);
+  const srcVaultAddress = sourceVaults[sourceIdx];
+  const eligibleDestVaults = vaultList.filter(v => v !== srcVaultAddress);
+
+  if (eligibleDestVaults.length === 0) return newAllocation;
+
+  const destIdx = Math.floor(Math.random() * eligibleDestVaults.length);
+  const destVaultAddress = eligibleDestVaults[destIdx];
 
   const transferAmount = computeTransferAmount(
     vault,
@@ -136,7 +158,12 @@ export function computeGreedySimAnnealing({
   ) {
     let acceptedMoves = 0;
     for (let i = 0; i < ANNEALING_CONSTANTS.ITERATIONS_PER_TEMP; i++) {
-      const newAllocation = generateNeighbor(vault, currentAllocation, currentReturnsDetails, currentTemp);
+      const newAllocation = generateNeighbor(
+        vault,
+        currentAllocation,
+        currentReturnsDetails,
+        currentTemp,
+      );
       const { totalReturns: newReturns, details: newReturnsDetails } = computeGreedyReturns({
         vault,
         allocation: newAllocation,
@@ -203,19 +230,21 @@ const isBetterAllocation = (
   newReturnsDetails: ReturnsDetails,
   initialReturnsDetails: ReturnsDetails,
 ) => {
+  if (hasProtectedOutflow(newAllocation)) return false;
+
   const getMaxAPYDiff = (returnsDetails: ReturnsDetails) => {
     let low = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
-        !isMinAllocation(getAddress(strategy), newAllocation) &&
+      return !isSameAddress(strategy as Address, vault.idleVaultAddress) &&
+        !isMinAllocation(strategy as Address, newAllocation) &&
         apy < accu
         ? apy
         : accu;
     }, Infinity);
     const high = Object.entries(returnsDetails).reduce((accu, [strategy, val]) => {
       const apy = val.interestAPY + val.rewardsAPY;
-      return !isAddressEqual(strategy as Address, vault.idleVaultAddress) &&
-        !isMinAllocation(getAddress(strategy), newAllocation) &&
+      return !isSameAddress(strategy as Address, vault.idleVaultAddress) &&
+        !isMinAllocation(strategy as Address, newAllocation) &&
         apy > accu
         ? apy
         : accu;
@@ -273,9 +302,11 @@ const isBetterAllocation = (
 
 export const isOverUtilized = (returnsDetails: ReturnsDetails) => {
   if (!ENV.MAX_UTILIZATION) return false;
-  return Object.entries(returnsDetails).filter(([vault]) => {
-    return !ENV.SOFT_CAPS[vault] || (ENV.SOFT_CAPS[vault].min + ENV.SOFT_CAPS[vault].max) !== 0n
-  }).some(([_, rd]) => rd.utilization > ENV.MAX_UTILIZATION);
+  return Object.entries(returnsDetails)
+    .filter(([vault]) => {
+      return !ENV.SOFT_CAPS[vault] || ENV.SOFT_CAPS[vault].min + ENV.SOFT_CAPS[vault].max !== 0n;
+    })
+    .some(([_, rd]) => rd.utilization > ENV.MAX_UTILIZATION);
 };
 
 export const isFullyOverUtilized = (returnsDetails: ReturnsDetails) => {
@@ -358,17 +389,13 @@ const canFullyResolveOverUtilization = (
   return totalMovable >= totalDeficit;
 };
 
-const getApySpread = (
-  vault: EulerEarn,
-  allocation: Allocation,
-  returnsDetails: ReturnsDetails,
-) => {
+const getApySpread = (vault: EulerEarn, allocation: Allocation, returnsDetails: ReturnsDetails) => {
   let low = Infinity;
   let high = 0;
 
   for (const [strategy, val] of Object.entries(returnsDetails)) {
-    if (isAddressEqual(strategy as Address, vault.idleVaultAddress)) continue;
-    if (isMinAllocation(getAddress(strategy), allocation)) continue;
+    if (isSameAddress(strategy as Address, vault.idleVaultAddress)) continue;
+    if (isMinAllocation(strategy as Address, allocation)) continue;
 
     const apy = val.interestAPY + val.rewardsAPY;
     if (apy < low) low = apy;
@@ -397,8 +424,10 @@ export const isOverUtilizationImproved = (
   if (newShortfall > oldShortfall) return false;
 
   if (!canFullyResolveOverUtilization(vault, oldAllocation, oldReturnsDetails)) {
-    return getApySpread(vault, newAllocation, newReturnsDetails) <
-      getApySpread(vault, oldAllocation, oldReturnsDetails);
+    return (
+      getApySpread(vault, newAllocation, newReturnsDetails) <
+      getApySpread(vault, oldAllocation, oldReturnsDetails)
+    );
   }
 
   return false;
@@ -440,6 +469,8 @@ export const isAllocationAllowed = (
   newAllocation: Allocation,
   newReturnsDetails: ReturnsDetails,
 ) => {
+  if (hasProtectedOutflow(newAllocation)) return false;
+
   // if old allocation was within limits and the new one goes outside - don't allow
   if (
     (!isOverUtilized(oldReturnsDetails) && isOverUtilized(newReturnsDetails)) ||

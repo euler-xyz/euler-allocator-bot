@@ -1,5 +1,6 @@
 import { getAddress } from 'viem';
 import {
+  parseAddressList,
   parseBigIntToNumberWithScale,
   parseContractAddress,
   parseDecimalToBigInt,
@@ -69,6 +70,29 @@ describe('common utils', () => {
     });
     it('should throw error for invalid address', () => {
       expect(() => parseStrategies(['euler:1234567890abcdef1234567890abcdef12345678'])).toThrow();
+    });
+  });
+
+  describe('parseAddressList', () => {
+    it('should return checksum encoded addresses and ignore empty entries', () => {
+      const result = parseAddressList([
+        '0x1234567890abcdef1234567890abcdef12345678',
+        '',
+        '0xABCDEF1234567890abcdef1234567890abcdef12',
+      ]);
+
+      expect(result).toEqual([
+        getAddress('0x1234567890abcdef1234567890abcdef12345678'),
+        getAddress('0xABCDEF1234567890abcdef1234567890abcdef12'),
+      ]);
+    });
+
+    it('should return empty array when undefined', () => {
+      expect(parseAddressList(undefined)).toEqual([]);
+    });
+
+    it('should throw for invalid addresses', () => {
+      expect(() => parseAddressList(['not-an-address'])).toThrow();
     });
   });
 
