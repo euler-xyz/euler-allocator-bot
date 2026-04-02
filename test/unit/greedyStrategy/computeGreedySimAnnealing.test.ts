@@ -261,6 +261,83 @@ describe('computeGreedySimAnnealing', () => {
         }),
       );
     });
+
+    it('ignores destination soft cap max while fixing over-utilization', () => {
+      const prevMaxUtilization = process.env.MAX_UTILIZATION;
+      const prevSoftCaps = process.env.SOFT_CAPS;
+      const sourceAddress = '0x0000000000000000000000000000000000000001' as Address;
+      const destAddress = '0x0000000000000000000000000000000000000002' as Address;
+
+      process.env.MAX_UTILIZATION = '0.9';
+      process.env.SOFT_CAPS = `${destAddress}:1:1`;
+
+      try {
+        jest.isolateModules(() => {
+          const {
+            generateNeighbor: isolatedGenerateNeighbor,
+          } = require('../../../src/utils/greedyStrategy/computeGreedySimAnnealing');
+
+          const temperature = 1;
+          const strategyDetails = {
+            [sourceAddress]: {
+              ...defaultVaultProps,
+              vault: sourceAddress,
+              cash: 3000n,
+            },
+            [destAddress]: {
+              ...defaultVaultProps,
+              vault: destAddress,
+              supplyCap: 15000n,
+              cash: 9000n,
+              totalBorrows: 1000n,
+            },
+          };
+          const vault = buildVault(strategyDetails);
+          const currentAllocation = {
+            [sourceAddress]: {
+              newAmount: 700n,
+              oldAmount: 500n,
+              diff: 200n,
+            },
+            [destAddress]: {
+              newAmount: 400n,
+              oldAmount: 300n,
+              diff: 100n,
+            },
+          };
+          const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
+
+          const newAllocation = isolatedGenerateNeighbor(
+            vault,
+            currentAllocation,
+            {
+              [sourceAddress]: { interestAPY: 0, rewardsAPY: 0, utilization: 0.1 },
+              [destAddress]: { interestAPY: 0, rewardsAPY: 0, utilization: 0.95 },
+            },
+            temperature,
+          );
+
+          expect(stringifyAllocation(newAllocation)).toEqual(
+            stringifyAllocation({
+              [sourceAddress]: {
+                newAmount: 420n,
+                oldAmount: 500n,
+                diff: -80n,
+              },
+              [destAddress]: {
+                newAmount: 680n,
+                oldAmount: 300n,
+                diff: 380n,
+              },
+            }),
+          );
+          randomSpy.mockRestore();
+        });
+      } finally {
+        process.env.MAX_UTILIZATION = prevMaxUtilization;
+        process.env.SOFT_CAPS = prevSoftCaps;
+      }
+    });
   });
 
   describe('main function', () => {

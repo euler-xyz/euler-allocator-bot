@@ -5,6 +5,7 @@ jest.mock('@/constants/constants', () => ({
   default: {
     MAX_UTILIZATION: 0.9,
     SOFT_CAPS: {},
+    NO_REALLOCATION_FROM: [],
     MIN_DEPOSIT: 10,
     MAX_STRATEGY_APY_DIFF: 0,
   },
