@@ -472,6 +472,8 @@ export const isAllocationAllowed = (
   newReturnsDetails: ReturnsDetails,
 ) => {
   if (hasProtectedOutflow(newAllocation)) return false;
+  if (Object.entries(newAllocation).some(([_, a]) => a.diff > 0 && a.diff < ENV.MIN_DEPOSIT))
+    return false; // avoid zero shares error
 
   // if old allocation was within limits and the new one goes outside - don't allow
   if (
@@ -494,9 +496,6 @@ export const isAllocationAllowed = (
     return isSoftCapImproved(oldAllocation, newAllocation);
   }
   // TODO add soft caps improvement check
-
-  if (Object.entries(newAllocation).some(([_, a]) => a.diff > 0 && a.diff < ENV.MIN_DEPOSIT))
-    return false; // avoid zero shares error
 
   return !isOverUtilized(oldReturnsDetails) && !isOutsideSoftCap(newAllocation);
 };

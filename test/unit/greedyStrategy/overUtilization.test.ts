@@ -135,4 +135,20 @@ describe('over utilization handling', () => {
       ),
     ).toBe(true);
   });
+
+  it('rejects dust deposits even when over-utilization is being improved', () => {
+    const dustNewAllocation = {
+      [overUtilizedVault]: { oldAmount: 100n, newAmount: 109n, diff: 9n },
+      [otherVault]: { oldAmount: 400n, newAmount: 391n, diff: -9n },
+    };
+
+    const dustNewReturns: ReturnsDetails = {
+      [overUtilizedVault]: { interestAPY: 15, rewardsAPY: 0, utilization: 0.94 },
+      [otherVault]: { interestAPY: 5, rewardsAPY: 0, utilization: 0.41 },
+    };
+
+    expect(
+      isAllocationAllowed(vault, oldAllocation, oldReturns, dustNewAllocation, dustNewReturns),
+    ).toBe(false);
+  });
 });
