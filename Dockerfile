@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:24.14.1-slim
 
 # Install pnpm
 RUN npm install -g pnpm
