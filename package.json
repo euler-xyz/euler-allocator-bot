@@ -39,5 +39,8 @@
         "tsx": "^4.7.0",
         "typescript": "^5.3.3"
     },
-    "packageManager": "pnpm@8.15.0"
+    "packageManager": "pnpm@8.15.0",
+    "engines": {
+        "node": ">=18"
+    }
 }
