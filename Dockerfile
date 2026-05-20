@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:22
 
 # Use corepack-managed pnpm (version pinned in package.json `packageManager`).
 RUN corepack enable
