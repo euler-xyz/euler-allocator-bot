@@ -4,8 +4,8 @@ A bot which uses simulated annealing to find optimal allocations into EulerEarn 
 
 ## Prerequisites
 
-- Node.js
-- [pnpm](https://pnpm.io/) package manager
+- Node.js 24.22.1 (see `.nvmrc`)
+- [pnpm](https://pnpm.io/) 8.15.0 package manager
 
 ## Setup
 

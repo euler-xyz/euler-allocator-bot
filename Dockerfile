@@ -1,7 +1,7 @@
-FROM node:18
+FROM node:24.22.1
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8.15.0
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
