@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "description": "TypeScript processor application",
     "main": "dist/index.js",
+    "engines": {
+        "node": ">=24.22.1 <25"
+    },
     "scripts": {
         "build": "tsc && tsc-alias",
         "start": "node -r tsconfig-paths/register dist/index.js",
