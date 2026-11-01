@@ -7,7 +7,7 @@ settings:
 dependencies:
   abitype:
     specifier: ^1.0.9
-    version: 1.1.1(typescript@5.9.3)(zod@3.25.76)
+    version: 1.1.1(typescript@5.9.3)(zod@4.6.6)
   dotenv:
     specifier: ^16.4.7
     version: 16.6.1
@@ -19,10 +19,10 @@ dependencies:
     version: 13.1.1
   viem:
     specifier: ^2.40.0
-    version: 2.40.0(typescript@5.9.3)(zod@3.25.76)
+    version: 2.40.0(typescript@5.9.3)(zod@4.6.6)
   zod:
-    specifier: ^3.24.1
-    version: 3.25.76
+    specifier: ^4.6.6
+    version: 4.6.6
 
 devDependencies:
   '@jest/globals':
@@ -1029,7 +1029,7 @@ packages:
       '@types/yargs-parser': 21.0.3
     dev: true
 
-  /abitype@1.1.0(typescript@5.9.3)(zod@3.25.76):
+  /abitype@1.1.0(typescript@5.9.3)(zod@4.6.6):
     resolution: {integrity: sha512-6Vh4HcRxNMLA0puzPjM5GBgT4aAcFGKZzSgAXvuZ27shJP6NEpielTuqbBmZILR5/xd0PizkBGy5hReKz9jl5A==}
     peerDependencies:
       typescript: '>=5.0.4'
@@ -1041,10 +1041,10 @@ packages:
         optional: true
     dependencies:
       typescript: 5.9.3
-      zod: 3.25.76
+      zod: 4.6.6
     dev: false
 
-  /abitype@1.1.1(typescript@5.9.3)(zod@3.25.76):
+  /abitype@1.1.1(typescript@5.9.3)(zod@4.6.6):
     resolution: {integrity: sha512-Loe5/6tAgsBukY95eGaPSDmQHIjRZYQq8PB1MpsNccDIK8WiV+Uw6WzaIXipvaxTEL2yEB0OpEaQv3gs8pkS9Q==}
     peerDependencies:
       typescript: '>=5.0.4'
@@ -1056,7 +1056,7 @@ packages:
         optional: true
     dependencies:
       typescript: 5.9.3
-      zod: 3.25.76
+      zod: 4.6.6
     dev: false
 
   /ansi-escapes@4.3.2:
@@ -2424,7 +2424,7 @@ packages:
       mimic-fn: 2.1.0
     dev: true
 
-  /ox@0.9.6(typescript@5.9.3)(zod@3.25.76):
+  /ox@0.9.6(typescript@5.9.3)(zod@4.6.6):
     resolution: {integrity: sha512-8SuCbHPvv2eZLYXrNmC0EC12rdzXQLdhnOMlHDW2wiCPLxBrOOJwX5L5E61by+UjTPOryqQiRSnjIKCI+GykKg==}
     peerDependencies:
       typescript: '>=5.4.0'
@@ -2438,7 +2438,7 @@ packages:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@3.25.76)
+      abitype: 1.1.1(typescript@5.9.3)(zod@4.6.6)
       eventemitter3: 5.0.1
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -3014,7 +3014,7 @@ packages:
       convert-source-map: 2.0.0
     dev: true
 
-  /viem@2.40.0(typescript@5.9.3)(zod@3.25.76):
+  /viem@2.40.0(typescript@5.9.3)(zod@4.6.6):
     resolution: {integrity: sha512-Y5XoBUzkNiIGfIR+Y7uD6e4xFDsdzR4PgxWgUwSPcRUq86XI+bxZjvvrYU/s+amgt1LpOvvIMdmgQ8+ZIaNi0g==}
     peerDependencies:
       typescript: '>=5.0.4'
@@ -3026,9 +3026,9 @@ packages:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.9.3)(zod@3.25.76)
+      abitype: 1.1.0(typescript@5.9.3)(zod@4.6.6)
       isows: 1.0.7(ws@8.18.3)
-      ox: 0.9.6(typescript@5.9.3)(zod@3.25.76)
+      ox: 0.9.6(typescript@5.9.3)(zod@4.6.6)
       typescript: 5.9.3
       ws: 8.18.3
     transitivePeerDependencies:
@@ -3120,6 +3120,6 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  /zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
     dev: false
